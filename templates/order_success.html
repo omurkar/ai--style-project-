@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .success-page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 50px 24px 80px;
+        }
+        .success-card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.04);
+        }
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: #e6f7ed;
+            color: #0d8244;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            margin-bottom: 20px;
+        }
+        .order-badge {
+            display: inline-block;
+            background: #f4efe9;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 12px 0 25px;
+        }
+        .details-box {
+            text-align: left;
+            background: #faf8f5;
+            border: 1px solid #eee7e0;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+        .detail-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .detail-line:last-child {
+            margin-bottom: 0;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: #111;
+            color: white;
+            padding: 13px 26px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .btn-secondary {
+            background: #f0ebe5;
+            color: #222;
+            padding: 13px 26px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+        </div>
+        <nav>
+            <a href="/recommendations">Recommendations</a>
+            <a href="/tryon">TryOn Me</a>
+            <a href="/profile">Profile</a>
+        </nav>
+    </header>
+
+    <div class="success-page">
+        <div class="success-card">
+            <div class="success-icon">✓</div>
+            <h1 style="font-size: 30px; margin-bottom: 8px;">Order Placed Successfully!</h1>
+            <p style="color: #666; font-size: 15px; margin: 0;">
+                Your custom UPI payment has been received and verified.
+            </p>
+
+            <div class="order-badge">
+                Order Reference: {{ order.order_id }}
+            </div>
+
+            <div class="details-box">
+                <div class="detail-line">
+                    <span style="color:#666;">Outfit:</span>
+                    <strong>{{ order.product_name }} (Size {{ order.size }})</strong>
+                </div>
+                <div class="detail-line">
+                    <span style="color:#666;">Total Paid:</span>
+                    <strong style="color: #0d8244;">₹{{ '%.2f'|format(order.price * order.quantity) }} (PAID)</strong>
+                </div>
+                <div class="detail-line">
+                    <span style="color:#666;">Payment Method:</span>
+                    <strong>Google Pay UPI ({{ order.payment_method }})</strong>
+                </div>
+                {% if order.upi_reference_id %}
+                <div class="detail-line">
+                    <span style="color:#666;">UPI Transaction ID:</span>
+                    <span style="font-family: monospace;">{{ order.upi_reference_id }}</span>
+                </div>
+                {% endif %}
+                <div class="detail-line" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e8e2dd;">
+                    <span style="color:#666;">Deliver To:</span>
+                    <strong>{{ order.delivery_name }}</strong>
+                </div>
+                <div class="detail-line">
+                    <span style="color:#666;">Address & PIN:</span>
+                    <span>{{ order.delivery_address_line1 }}, {{ order.delivery_city }} - {{ order.delivery_postal_code }}</span>
+                </div>
+                {% if order.latitude and order.longitude %}
+                <div class="detail-line">
+                    <span style="color:#666;">GPS Coordinates:</span>
+                    <a href="https://www.google.com/maps?q={{ order.latitude }},{{ order.longitude }}" target="_blank" style="color: #0b66c2; font-weight: 600;">
+                        📍 {{ '%.4f'|format(order.latitude) }}°, {{ '%.4f'|format(order.longitude) }}° (Tracked)
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="btn-group">
+                <a href="/recommendations" class="btn-primary">Explore More Outfits</a>
+                <a href="/tryon" class="btn-secondary">Virtual Fitting Room</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+

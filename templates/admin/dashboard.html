@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .admin-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid #e5dfd8;
+            padding-bottom: 20px;
+        }
+        .admin-header h1 {
+            font-size: 32px;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+        .admin-badge {
+            display: inline-block;
+            background: #111;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .metric-card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .metric-card .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #777;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .metric-card .value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111;
+        }
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+        }
+        .section-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #f0eae4;
+            padding-bottom: 16px;
+        }
+        .section-card-header h2 {
+            font-size: 22px;
+            margin: 0;
+            color: #222;
+        }
+        .payment-config-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 35px;
+            align-items: start;
+        }
+        .form-row {
+            margin-bottom: 20px;
+        }
+        .form-row label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .form-row input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd6cf;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #faf8f5;
+        }
+        .qr-preview-box {
+            background: #faf7f4;
+            border: 1px dashed #d6ceca;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        .qr-preview-box img {
+            max-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            background: white;
+            padding: 8px;
+        }
+        .payload-display {
+            word-break: break-all;
+            background: #eee7e0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            margin-top: 12px;
+            text-align: left;
+            color: #444;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 14px 16px;
+            background: #f7f3ef;
+            color: #555;
+            font-weight: 700;
+            border-bottom: 1px solid #e6ded7;
+        }
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0eae4;
+            vertical-align: middle;
+        }
+        .product-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #eee;
+        }
+        .size-badge {
+            display: inline-block;
+            background: #f0ebe5;
+            border: 1px solid #e0d8cf;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 3px;
+            font-weight: 600;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .status-COMPLETED {
+            background: #e6f7ed;
+            color: #0d8244;
+            border: 1px solid #b7ebd0;
+        }
+        .status-PENDING {
+            background: #fff8e6;
+            color: #a36f00;
+            border: 1px solid #fae29f;
+        }
+        .btn-sm {
+            padding: 7px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-edit {
+            background: #222;
+            color: white;
+            margin-right: 6px;
+        }
+        .btn-delete {
+            background: #fee7e7;
+            color: #d32f2f;
+        }
+        .btn-primary {
+            background: #111;
+            color: white;
+            padding: 11px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+        </div>
+        <nav>
+            <a href="/recommendations">Recommendations</a>
+            <a href="/tryon">TryOn Me</a>
+            <a href="/admin" style="font-weight: 700; color:#111;">Admin Panel</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+
+        <div class="admin-header">
+            <div>
+                <span class="admin-badge">Secure Management</span>
+                <h1>Admin Control Center</h1>
+                <p style="color: #666; margin:0;">Manage inventory, configure Master Google Pay UPI, and track geolocated orders.</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_product_add') }}" class="btn-primary">
+                    + Upload New Clothing Item
+                </a>
+            </div>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}" style="margin-bottom: 25px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="label">Total Products</div>
+                <div class="value">{{ products|length }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Total Customer Orders</div>
+                <div class="value">{{ orders|length }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Completed Orders</div>
+                <div class="value">
+                    {{ orders | selectattr('payment_status', 'equalto', 'COMPLETED') | list | length }}
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Master Google Pay UPI</div>
+                <div class="value" style="font-size: 20px; font-weight: 700; word-break: break-all;">
+                    {{ master_upi_id }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Gateway Configuration Card -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <h2>Master Google Pay UPI Gateway Configuration</h2>
+                    <p style="color: #666; font-size: 13px; margin: 4px 0 0;">
+                        Incoming checkout transactions will generate dynamic QR codes directed to this master ID.
+                    </p>
+                </div>
+            </div>
+
+            <div class="payment-config-grid">
+                <form method="POST" action="{{ url_for('admin_update_upi') }}">
+                    <div class="form-row">
+                        <label for="master_upi_id">Master Google Pay UPI ID</label>
+                        <input type="text" id="master_upi_id" name="master_upi_id" 
+                               value="{{ master_upi_id }}" 
+                               placeholder="e.g. yourbusiness@okhdfcbank" required>
+                        <span style="font-size: 11px; color: #777;">Standard format: username@bank (Google Pay / PhonePe / Paytm)</span>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="merchant_name">Merchant / Business Display Name</label>
+                        <input type="text" id="merchant_name" name="merchant_name" 
+                               value="{{ merchant_name }}" 
+                               placeholder="AI Style Fashion Store" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Save Payment Settings
+                    </button>
+                </form>
+
+                <div class="qr-preview-box">
+                    <h3 style="font-size: 15px; margin-bottom: 12px;">Dynamic UPI QR Payload Test</h3>
+                    <img src="{{ test_qr_base64 }}" alt="Dynamic UPI QR Code Preview">
+                    <div class="payload-display">
+                        <strong>Payload URI:</strong><br>
+                        {{ test_payload }}
+                    </div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        Testing Amount: <strong>₹1,499.00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Management Table (CRUD) -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <h2>Clothing Inventory (Local Asset Database &amp; Firebase)</h2>
+                    <p style="color: #666; font-size: 13px; margin: 4px 0 0;">
+                        Full CRUD: Edit metadata, available sizes, prices, and store clothing image files locally in storage/clothing/.
+                    </p>
+                </div>
+                <a href="{{ url_for('admin_product_add') }}" class="btn-primary" style="padding: 8px 16px; font-size: 13px;">
+                    + Add Outfit
+                </a>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Outfit Name</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Price</th>
+                            <th>Available Sizes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                {% if product.image_path %}
+                                    <img src="{{ product.image_path if product.image_path.startswith('http') or product.image_path.startswith('/') else '/' + product.image_path }}" 
+                                         class="product-thumb" alt="Product"
+                                         onerror="this.src='https://via.placeholder.com/60?text=AI';">
+                                {% else %}
+                                    <div class="product-thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px;">👗</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ product.outfit_name }}</strong><br>
+                                <span style="font-size: 11px; color: #888;">ID: {{ product.outfit_id }}</span>
+                            </td>
+                            <td>{{ product.category }}</td>
+                            <td>{{ product.clothing_type or '-' }}</td>
+                            <td><strong>₹{{ '%.0f'|format(product.price or 0) }}</strong></td>
+                            <td>
+                                {% for s in product.sizes_list %}
+                                    <span class="size-badge">{{ s }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_product_edit', clothing_id=product.id) }}" class="btn-sm btn-edit">Edit</a>
+                                <form method="POST" action="{{ url_for('admin_product_delete', clothing_id=product.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this clothing asset?');">
+                                    <button type="submit" class="btn-sm btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders & Geolocation Tracking Table -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div>
+                    <h2>Orders & Real-Time Delivery Mapping</h2>
+                    <p style="color: #666; font-size: 13px; margin: 4px 0 0;">
+                        Orders placed with exact coordinates captured via HTML5 Geolocation API and verified PIN codes.
+                    </p>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Item & Size</th>
+                            <th>Total</th>
+                            <th>Delivery Address & PIN</th>
+                            <th>GPS Coordinates</th>
+                            <th>Status</th>
+                            <th>UPI Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if orders %}
+                            {% for ord in orders %}
+                            <tr>
+                                <td>
+                                    <strong>{{ ord.order_id }}</strong><br>
+                                    <span style="font-size:11px; color:#888;">{{ ord.created_at }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ ord.delivery_name }}</strong><br>
+                                    <span style="font-size: 12px; color: #666;">{{ ord.user_email }}</span><br>
+                                    <span style="font-size: 12px; color: #666;">📞 {{ ord.delivery_phone }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ ord.product_name }}</strong><br>
+                                    <span class="size-badge">Size: {{ ord.size }}</span> (Qty: {{ ord.quantity }})
+                                </td>
+                                <td><strong>₹{{ '%.2f'|format(ord.price * ord.quantity) }}</strong></td>
+                                <td>
+                                    {{ ord.delivery_address_line1 }}, {{ ord.delivery_city }}, {{ ord.delivery_state }}<br>
+                                    <strong>PIN: {{ ord.delivery_postal_code }}</strong>
+                                </td>
+                                <td>
+                                    {% if ord.latitude and ord.longitude %}
+                                        <a href="https://www.google.com/maps?q={{ ord.latitude }},{{ ord.longitude }}" target="_blank" style="color: #0b66c2; text-decoration: none; font-weight: 600;">
+                                            📍 {{ '%.4f'|format(ord.latitude) }}, {{ '%.4f'|format(ord.longitude) }}
+                                        </a><br>
+                                        <span style="font-size: 11px; color: #888;">Acc: ±{{ '%.0f'|format(ord.location_accuracy or 0) }}m</span>
+                                    {% else %}
+                                        <span style="color: #999;">Standard Address Only</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="status-pill status-{{ ord.payment_status }}">
+                                        {{ ord.payment_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-family: monospace; font-size: 12px;">{{ ord.upi_reference_id or 'Pending' }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" style="text-align:center; padding: 30px; color:#888;">
+                                    No customer orders placed yet. Orders will appear here upon checkout.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+

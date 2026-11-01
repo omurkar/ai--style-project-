@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AI Analysis | AI Style</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        AI<span>Style</span>
+    </div>
+
+    <nav>
+
+        <a href="/profile">
+            Profile
+        </a>
+
+        <a href="/favourites">
+            Favourites
+        </a>
+
+        <a href="/privacy">
+            Privacy
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </nav>
+
+</header>
+
+
+
+<main class="analysis-page">
+
+
+    <!-- PAGE HEADING -->
+
+    <div class="analysis-heading">
+
+        <p class="page-label">
+            STEP 02
+        </p>
+
+        <h1>
+            Your AI Style <span>Analysis.</span>
+        </h1>
+
+        <p>
+            Our computer-vision system has analysed your photo
+            to estimate clothing-related characteristics.
+        </p>
+
+    </div>
+
+
+
+    <!-- AI NOTICE -->
+
+    <div class="analysis-notice">
+
+        <span>
+            ✦
+        </span>
+
+        <div>
+
+            <strong>
+                AI-generated estimates
+            </strong>
+
+            <p>
+                These results are estimates based on the uploaded
+                image and may be affected by lighting, pose,
+                clothing and image quality. You can correct any
+                result before continuing.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ANALYSIS FORM -->
+
+    <form
+        method="POST"
+        action="/save-analysis"
+    >
+
+
+        <section class="analysis-grid">
+
+
+            <!-- CATEGORY -->
+
+            <div class="analysis-card">
+
+                <div class="analysis-card-top">
+
+                    <div class="analysis-card-icon">
+                        👤
+                    </div>
+
+                    <span class="estimate-badge">
+                        AI ESTIMATE
+                    </span>
+
+                </div>
+
+                <p class="analysis-label">
+                    CATEGORY
+                </p>
+
+                <h2>
+                    {{ category }}
+                </h2>
+
+                <p>
+                    Detected clothing category
+                </p>
+
+                <select
+                    name="category"
+                    required
+                >
+
+                    <option
+                        value="Women"
+                        {% if category == "Women" %}selected{% endif %}
+                    >
+                        Women
+                    </option>
+
+                    <option
+                        value="Men"
+                        {% if category == "Men" %}selected{% endif %}
+                    >
+                        Men
+                    </option>
+
+                    <option
+                        value="Kids"
+                        {% if category == "Kids" %}selected{% endif %}
+                    >
+                        Kids
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- SKIN TONE -->
+
+            <div class="analysis-card">
+
+                <div class="analysis-card-top">
+
+                    <div class="analysis-card-icon">
+                        🎨
+                    </div>
+
+                    <span class="estimate-badge">
+                        AI ESTIMATE
+                    </span>
+
+                </div>
+
+                <p class="analysis-label">
+                    SKIN TONE
+                </p>
+
+                <h2>
+                    {{ skin_tone }}
+                </h2>
+
+                <p>
+                    Estimated visible skin tone
+                </p>
+
+                <select
+                    name="skin_tone"
+                    required
+                >
+
+                    <option
+                        value="Very Fair"
+                        {% if skin_tone == "Very Fair" %}selected{% endif %}
+                    >
+                        Very Fair
+                    </option>
+
+                    <option
+                        value="Fair"
+                        {% if skin_tone == "Fair" %}selected{% endif %}
+                    >
+                        Fair
+                    </option>
+
+                    <option
+                        value="Light"
+                        {% if skin_tone == "Light" %}selected{% endif %}
+                    >
+                        Light
+                    </option>
+
+                    <option
+                        value="Medium"
+                        {% if skin_tone == "Medium" %}selected{% endif %}
+                    >
+                        Medium
+                    </option>
+
+                    <option
+                        value="Tan"
+                        {% if skin_tone == "Tan" %}selected{% endif %}
+                    >
+                        Tan
+                    </option>
+
+                    <option
+                        value="Deep"
+                        {% if skin_tone == "Deep" %}selected{% endif %}
+                    >
+                        Deep
+                    </option>
+
+                    <option
+                        value="Dark"
+                        {% if skin_tone == "Dark" %}selected{% endif %}
+                    >
+                        Dark
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- UNDERTONE -->
+
+            <div class="analysis-card">
+
+                <div class="analysis-card-top">
+
+                    <div class="analysis-card-icon">
+                        🌡️
+                    </div>
+
+                    <span class="estimate-badge">
+                        AI ESTIMATE
+                    </span>
+
+                </div>
+
+                <p class="analysis-label">
+                    UNDERTONE
+                </p>
+
+                <h2>
+                    {{ undertone }}
+                </h2>
+
+                <p>
+                    Estimated skin undertone
+                </p>
+
+                <select
+                    name="undertone"
+                    required
+                >
+
+                    <option
+                        value="Warm"
+                        {% if undertone == "Warm" %}selected{% endif %}
+                    >
+                        Warm
+                    </option>
+
+                    <option
+                        value="Cool"
+                        {% if undertone == "Cool" %}selected{% endif %}
+                    >
+                        Cool
+                    </option>
+
+                    <option
+                        value="Neutral"
+                        {% if undertone == "Neutral" %}selected{% endif %}
+                    >
+                        Neutral
+                    </option>
+
+                    <option
+                        value="Not Determined"
+                        {% if undertone == "Not Determined" %}selected{% endif %}
+                    >
+                        Not Determined
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- BODY SHAPE -->
+
+            <div class="analysis-card">
+
+                <div class="analysis-card-top">
+
+                    <div class="analysis-card-icon">
+                        👗
+                    </div>
+
+                    <span class="estimate-badge">
+                        AI ESTIMATE
+                    </span>
+
+                </div>
+
+                <p class="analysis-label">
+                    BODY SHAPE
+                </p>
+
+                <h2>
+                    {{ body_shape }}
+                </h2>
+
+                <p>
+                    Estimated from visible body proportions.
+                </p>
+
+                {% if category == "Kids" %}
+
+                    <select
+                        name="body_shape"
+                        required
+                    >
+
+                        <option
+                            value="Not Applicable"
+                            selected
+                        >
+                            Not Applicable
+                        </option>
+
+                    </select>
+
+                {% else %}
+
+                    <select
+                        name="body_shape"
+                        required
+                    >
+
+                        <option
+                            value="Hourglass"
+                            {% if body_shape == "Hourglass" %}selected{% endif %}
+                        >
+                            Hourglass
+                        </option>
+
+                        <option
+                            value="Pear"
+                            {% if body_shape == "Pear" %}selected{% endif %}
+                        >
+                            Pear
+                        </option>
+
+                        <option
+                            value="Apple"
+                            {% if body_shape == "Apple" %}selected{% endif %}
+                        >
+                            Apple
+                        </option>
+
+                        <option
+                            value="Rectangle"
+                            {% if body_shape == "Rectangle" %}selected{% endif %}
+                        >
+                            Rectangle
+                        </option>
+
+                        <option
+                            value="Inverted Triangle"
+                            {% if body_shape == "Inverted Triangle" %}selected{% endif %}
+                        >
+                            Inverted Triangle
+                        </option>
+
+                    </select>
+
+                {% endif %}
+
+
+                <div class="shape-info">
+
+                    <strong>
+                        Recommendation impact
+                    </strong>
+
+                    <p>
+                        Body-shape compatibility will be considered
+                        when selecting suitable clothing styles.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- BODY PROPORTIONS -->
+
+            <div class="analysis-card">
+
+                <div class="analysis-card-top">
+
+                    <div class="analysis-card-icon">
+                        📐
+                    </div>
+
+                    <span class="estimate-badge">
+                        AI ESTIMATE
+                    </span>
+
+                </div>
+
+                <p class="analysis-label">
+                    BODY PROPORTIONS
+                </p>
+
+                <h2>
+                    {{ body_proportions }}
+                </h2>
+
+                <p>
+                    Estimated clothing-related proportions.
+                </p>
+
+
+                {% if category == "Kids" %}
+
+                    <select
+                        name="body_proportions"
+                        required
+                    >
+
+                        <option
+                            value="Not Applicable"
+                            selected
+                        >
+                            Not Applicable
+                        </option>
+
+                    </select>
+
+                {% else %}
+
+                    <select
+                        name="body_proportions"
+                        required
+                    >
+
+                        <option
+                            value="Balanced"
+                            {% if body_proportions == "Balanced" %}selected{% endif %}
+                        >
+                            Balanced
+                        </option>
+
+                        <option
+                            value="Wider Shoulders"
+                            {% if body_proportions == "Wider Shoulders" %}selected{% endif %}
+                        >
+                            Wider Shoulders
+                        </option>
+
+                        <option
+                            value="Longer Torso"
+                            {% if body_proportions == "Longer Torso" %}selected{% endif %}
+                        >
+                            Longer Torso
+                        </option>
+
+                        <option
+                            value="Longer Legs"
+                            {% if body_proportions == "Longer Legs" %}selected{% endif %}
+                        >
+                            Longer Legs
+                        </option>
+
+                        <option
+                            value="Shorter Torso"
+                            {% if body_proportions == "Shorter Torso" %}selected{% endif %}
+                        >
+                            Shorter Torso
+                        </option>
+
+                        <option
+                            value="Not Determined"
+                            {% if body_proportions == "Not Determined" %}selected{% endif %}
+                        >
+                            Not Determined
+                        </option>
+
+                    </select>
+
+                {% endif %}
+
+            </div>
+
+
+
+            <!-- LEG PROPORTION -->
+
+            <div class="analysis-card">
+
+                <div class="analysis-card-top">
+
+                    <div class="analysis-card-icon">
+                        🦵
+                    </div>
+
+                    <span class="estimate-badge">
+                        AI ESTIMATE
+                    </span>
+
+                </div>
+
+                <p class="analysis-label">
+                    LEG PROPORTION
+                </p>
+
+                <h2>
+                    {{ leg_proportion|default("Not Determined") }}
+                </h2>
+
+                <p>
+                    Estimated leg-to-body proportion.
+                </p>
+
+
+                {% if category == "Kids" %}
+
+                    <select
+                        name="leg_proportion"
+                        required
+                    >
+
+                        <option
+                            value="Not Applicable"
+                            selected
+                        >
+                            Not Applicable
+                        </option>
+
+                    </select>
+
+                {% else %}
+
+                    <select
+                        name="leg_proportion"
+                        required
+                    >
+
+                        <option
+                            value="Balanced"
+                            {% if leg_proportion == "Balanced" %}selected{% endif %}
+                        >
+                            Balanced
+                        </option>
+
+                        <option
+                            value="Longer Legs"
+                            {% if leg_proportion == "Longer Legs" %}selected{% endif %}
+                        >
+                            Longer Legs
+                        </option>
+
+                        <option
+                            value="Shorter Legs"
+                            {% if leg_proportion == "Shorter Legs" %}selected{% endif %}
+                        >
+                            Shorter Legs
+                        </option>
+
+                        <option
+                            value="Not Determined"
+                            {% if leg_proportion == "Not Determined" or not leg_proportion %}selected{% endif %}
+                        >
+                            Not Determined
+                        </option>
+
+                    </select>
+
+                {% endif %}
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- HEIGHT -->
+
+        <section class="height-result-card">
+
+            <div>
+
+                <p class="analysis-label">
+                    USER-ENTERED HEIGHT
+                </p>
+
+                <h2>
+
+                    {% if height_cm %}
+
+                        {{ "%.1f"|format(height_cm) }} cm
+
+                    {% else %}
+
+                        Not Provided
+
+                    {% endif %}
+
+                </h2>
+
+                <p>
+                    Height is provided manually by the user and is
+                    not calculated from the photograph.
+                </p>
+
+            </div>
+
+
+            <div class="height-check">
+
+                ✓ Manually Provided
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ACTION BUTTONS -->
+
+        <div class="analysis-actions">
+
+            <a
+                href="/upload"
+                class="secondary-button"
+            >
+                ← Change Photo
+            </a>
+
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Continue to Recommendations →
+            </button>
+
+        </div>
+
+
+    </form>
+
+
+</main>
+
+
+
+<footer>
+
+    <div>
+        © 2026 AI Style
+    </div>
+
+    <a href="/privacy">
+        Privacy & Security
+    </a>
+
+</footer>
+
+
+</body>
+
+</html>

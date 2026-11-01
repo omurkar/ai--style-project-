@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile | AI Style</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/oval_cropper.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        AI<span>Style</span>
+    </div>
+
+    <nav>
+
+        <a href="/">
+            Home
+        </a>
+
+        <a href="/recommendations">
+            Recommendations
+        </a>
+
+        <a href="/tryon">
+            TryOn Me
+        </a>
+
+        {% if session.get('user_role') == 'admin' %}
+        <a href="/admin" style="font-weight: 700; color: #111;">
+            Admin Panel
+        </a>
+        {% endif %}
+
+        <a href="/favourites">
+            Favourites
+        </a>
+
+        <a href="/profile" class="profile-avatar-link" title="My Profile">
+            <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </nav>
+
+</header>
+
+
+
+<main class="profile-page">
+
+
+    <div class="profile-header">
+
+        <div>
+
+            <p class="page-label">
+                MY STYLE PROFILE
+            </p>
+
+            <h1>
+                Your Personal Style
+            </h1>
+
+            <p>
+                Manage your information and AI fashion profile.
+            </p>
+
+        </div>
+
+
+        <button class="outline-button">
+            Edit Profile
+        </button>
+
+    </div>
+
+
+
+    <section class="profile-grid">
+
+
+        <!-- BASIC INFORMATION -->
+
+        <div class="profile-card">
+
+            <div class="card-heading">
+
+                <div class="card-icon">
+                    👤
+                </div>
+
+                <div>
+
+                    <h2>
+                        Basic Information
+                    </h2>
+
+                    <p>
+                        Your account details
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-details">
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Full Name
+                    </span>
+
+                    <strong>
+                        {{ user["full_name"] }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Email
+                    </span>
+
+                    <strong>
+                        {{ user["email"] }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Category
+                        </span>
+
+                        <strong>
+                            {{ user["category"] if user["category"] else "Not Analysed" }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Age
+                        </span>
+
+                        <strong>
+                            {{ user["age"] if user["age"] else "Not Added" }}
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- AI STYLE PROFILE -->
+
+        <div class="profile-card">
+
+            <div class="card-heading">
+
+                <div class="card-icon">
+                    ✨
+                </div>
+
+                <div>
+
+                    <h2>
+                        AI Style Profile
+                    </h2>
+
+                    <p>
+                        Your clothing characteristics
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="analysis-status">
+
+                <div class="status-icon">
+                    ✦
+                </div>
+
+                <div>
+
+                    <strong>
+                        AI Analysis Pending
+                    </strong>
+
+                    <p>
+                        Upload a photo to generate
+                        your personalized style profile.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="/upload"
+                class="primary-button profile-button"
+            >
+
+                Analyse My Style →
+
+            </a>
+
+
+        </div>
+
+
+
+        <!-- VIRTUAL TRY-ON FACE TEMPLATE -->
+        <div class="profile-card" id="faceTemplateCard">
+
+            <div class="card-heading">
+
+                <div class="card-icon">
+                    ✨
+                </div>
+
+                <div>
+
+                    <h2>
+                        Virtual Try-On Face Template
+                    </h2>
+
+                    <p>
+                        Applied across all clothing try-ons in the catalog
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 18px 0;">
+
+                <div style="width: 140px; height: 190px; border-radius: 50% / 55%; overflow: hidden; border: 3.5px solid #e8b87d; box-shadow: 0 10px 30px rgba(0,0,0,0.12); background: #f0ebe4; display: flex; align-items: center; justify-content: center; position: relative;">
+
+                    <img
+                        id="profileFaceTemplateImg"
+                        src="/user-face-template?t={{ session.get('user_id') }}"
+                        alt="Your Face Template"
+                        style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                        onerror="this.style.display='none'; document.getElementById('facePlaceholder').style.display='flex';"
+                    >
+
+                    <div id="facePlaceholder" style="display: none; flex-direction: column; align-items: center; justify-content: center; color: #888; font-size: 13px; text-align: center; padding: 10px;">
+                        <span style="font-size: 32px; margin-bottom: 6px;">👤</span>
+                        No face template yet
+                    </div>
+
+                </div>
+
+
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+
+                    <span style="display: inline-flex; align-items: center; gap: 6px; background: #e8f5e9; color: #1b5e20; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                        ✓ Active Across All Outfits
+                    </span>
+
+                    <small style="color: #666; font-size: 12px; text-align: center; max-width: 280px;">
+                        Upload a photo from your gallery and adjust the oval frame directly over your face.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <input type="file" id="profileFaceInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
+
+            <button
+                type="button"
+                id="profileUploadFaceBtn"
+                class="primary-button profile-button"
+                style="background: #111; color: white; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;"
+            >
+                📷 Upload Face from Gallery &amp; Oval Crop
+            </button>
+
+        </div>
+
+
+
+    </section>
+
+
+
+    <!-- PROFILE CHARACTERISTICS -->
+
+    <section class="profile-card characteristics-card">
+
+
+        <div class="card-heading">
+
+            <div class="card-icon">
+                🎨
+            </div>
+
+            <div>
+
+                <h2>
+                    Style Characteristics
+                </h2>
+
+                <p>
+                    These will be generated after AI analysis.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="characteristics-grid">
+
+
+            <div class="characteristic">
+
+                <span class="characteristic-icon">
+                    👩
+                </span>
+
+                <span class="characteristic-label">
+                    Category
+                </span>
+
+                <strong>
+                    Pending
+                </strong>
+
+            </div>
+
+
+            <div class="characteristic">
+
+                <span class="characteristic-icon">
+                    🎨
+                </span>
+
+                <span class="characteristic-label">
+                    Skin Tone
+                </span>
+
+                <strong>
+                    Pending
+                </strong>
+
+            </div>
+
+
+            <div class="characteristic">
+
+                <span class="characteristic-icon">
+                    🌡️
+                </span>
+
+                <span class="characteristic-label">
+                    Undertone
+                </span>
+
+                <strong>
+                    Pending
+                </strong>
+
+            </div>
+
+
+            <div class="characteristic">
+
+                <span class="characteristic-icon">
+                    👤
+                </span>
+
+                <span class="characteristic-label">
+                    Body Shape
+                </span>
+
+                <strong>
+                    Pending
+                </strong>
+
+            </div>
+
+
+            <div class="characteristic">
+
+                <span class="characteristic-icon">
+                    📏
+                </span>
+
+                <span class="characteristic-label">
+                    Height
+                </span>
+
+                <strong>
+                    Enter Manually
+                </strong>
+
+            </div>
+
+
+            <div class="characteristic">
+
+                <span class="characteristic-icon">
+                    📐
+                </span>
+
+                <span class="characteristic-label">
+                    Proportions
+                </span>
+
+                <strong>
+                    Pending
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- FASHION PREFERENCES -->
+
+    <section class="profile-card preferences-card">
+
+
+        <div class="card-heading">
+
+            <div class="card-icon">
+                💗
+            </div>
+
+            <div>
+
+                <h2>
+                    Fashion Preferences
+                </h2>
+
+                <p>
+                    Tell AI what you like.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="POST" action="{{ url_for('update_preferences') }}">
+            <div class="preference-grid">
+
+                <div class="preference-item">
+                    <label for="preferred_style">Preferred Style</label>
+                    <select id="preferred_style" name="preferred_style">
+                        <option value="">Select Style</option>
+                        <option value="Casual" {% if profile and profile.preferred_style == 'Casual' %}selected{% endif %}>Casual</option>
+                        <option value="Formal" {% if profile and profile.preferred_style == 'Formal' %}selected{% endif %}>Formal</option>
+                        <option value="Traditional" {% if profile and profile.preferred_style == 'Traditional' %}selected{% endif %}>Traditional</option>
+                        <option value="Streetwear" {% if profile and profile.preferred_style == 'Streetwear' %}selected{% endif %}>Streetwear</option>
+                        <option value="Minimal" {% if profile and profile.preferred_style == 'Minimal' %}selected{% endif %}>Minimal</option>
+                    </select>
+                </div>
+
+                <div class="preference-item">
+                    <label for="preferred_occasion">Occasion</label>
+                    <select id="preferred_occasion" name="preferred_occasion">
+                        <option value="">Select Occasion</option>
+                        <option value="Everyday" {% if profile and profile.preferred_occasion == 'Everyday' %}selected{% endif %}>Everyday</option>
+                        <option value="Office" {% if profile and profile.preferred_occasion == 'Office' %}selected{% endif %}>Office (Formals)</option>
+                        <option value="Party" {% if profile and (profile.preferred_occasion == 'Party' or profile.preferred_occasion == 'Parties') %}selected{% endif %}>Party (Parties)</option>
+                        <option value="Wedding" {% if profile and profile.preferred_occasion == 'Wedding' %}selected{% endif %}>Wedding</option>
+                        <option value="College" {% if profile and profile.preferred_occasion == 'College' %}selected{% endif %}>College</option>
+                    </select>
+                </div>
+
+                <div class="preference-item">
+                    <label for="budget">Budget Limit</label>
+                    <select id="budget" name="budget">
+                        <option value="">Select Budget</option>
+                        <option value="1000" {% if profile and profile.budget and profile.budget <= 1000 %}selected{% endif %}>Under ₹1,000</option>
+                        <option value="2500" {% if profile and profile.budget and profile.budget > 1000 and profile.budget <= 2500 %}selected{% endif %}>₹1,000 – ₹2,500</option>
+                        <option value="5000" {% if profile and profile.budget and profile.budget > 2500 and profile.budget <= 5000 %}selected{% endif %}>₹2,500 – ₹5,000</option>
+                        <option value="10000" {% if profile and profile.budget and profile.budget > 5000 %}selected{% endif %}>₹5,000+</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <button type="submit" class="auth-button preference-button" style="margin-top:20px;">
+                Save Preferences
+            </button>
+        </form>
+
+
+    </section>
+
+
+</main>
+
+
+
+<footer>
+
+    <div>
+        © 2026 AI Style
+    </div>
+
+    <a href="/privacy">
+        Privacy & Security
+    </a>
+
+</footer>
+
+<script src="{{ url_for('static', filename='js/oval_cropper.js') }}"></script>
+<script>
+const uploadFaceBtn = document.getElementById('profileUploadFaceBtn');
+const faceInput = document.getElementById('profileFaceInput');
+if (uploadFaceBtn && faceInput) {
+    uploadFaceBtn.onclick = function() {
+        faceInput.click();
+    };
+    faceInput.onchange = function() {
+        const file = this.files[0];
+        if (!file) return;
+        window.OvalFaceCropper.openWithFile(file, function(result) {
+            const img = document.getElementById('profileFaceTemplateImg');
+            const ph = document.getElementById('facePlaceholder');
+            if (img) {
+                img.src = result.template_url;
+                img.style.display = 'block';
+            }
+            if (ph) ph.style.display = 'none';
+            alert("✓ Face template saved successfully! It is now active for all clothing try-ons.");
+        });
+    };
+}
+</script>
+
+</body>
+
+</html>

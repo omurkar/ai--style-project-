@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favourites | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .favourites-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 24px 80px;
+        }
+        .favourites-header {
+            margin-bottom: 35px;
+        }
+        .page-label {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #777;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .favourites-header h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+        </div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="/tryon">TryOn Me</a>
+            {% if session.get('user_role') == 'admin' %}
+                <a href="/admin" style="font-weight: 700; color: #111;">Admin Panel</a>
+            {% endif %}
+            <a href="/favourites">Favourites</a>
+            <a href="/profile" class="profile-avatar-link" title="My Profile">
+                <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+            </a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+
+    <main class="favourites-page">
+        <div class="favourites-header">
+            <p class="page-label">Saved Collections</p>
+            <h1>My Favourites</h1>
+            <p style="color: #666; margin-top: 8px;">Outfits and styles you have saved for later.</p>
+        </div>
+
+        {% if favourites %}
+            <div class="catalog-products-grid">
+                {% for p in favourites %}
+                    <div class="catalog-card">
+                        <a href="{{ url_for('outfit', outfit_id=p.outfit_id) }}" class="catalog-card-image-link" title="View {{ p.outfit_name }}">
+                            <div class="catalog-card-image-box">
+                                {% if p.image_path %}
+                                    <img src="/{{ p.image_path }}" alt="{{ p.outfit_name }}" class="catalog-card-img"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="catalog-card-fallback-emoji" style="display:none;">👗</div>
+                                {% else %}
+                                    <div class="catalog-card-fallback-emoji">👗</div>
+                                {% endif %}
+                                <span class="catalog-card-category-badge">{{ p.category }}</span>
+                            </div>
+                        </a>
+                        <div class="catalog-card-body">
+                            <div class="catalog-card-meta">
+                                <span class="catalog-card-brand">{{ p.brand or 'AI Style' }}</span>
+                                <span class="catalog-card-type">{{ p.clothing_type or 'Outfit' }}</span>
+                            </div>
+                            <h3 class="catalog-card-title">
+                                <a href="{{ url_for('outfit', outfit_id=p.outfit_id) }}">{{ p.outfit_name }}</a>
+                            </h3>
+                            <div class="catalog-card-tags">
+                                {% if p.occasion %}<span class="catalog-tag">{{ p.occasion }}</span>{% endif %}
+                                {% if p.style %}<span class="catalog-tag">{{ p.style }}</span>{% endif %}
+                                {% if p.colour %}<span class="catalog-tag">{{ p.colour }}</span>{% endif %}
+                            </div>
+                            <div class="catalog-card-footer">
+                                <div class="catalog-card-price">₹{{ '%.0f'|format(p.price) }}</div>
+                                <div class="catalog-card-actions">
+                                    <a href="{{ url_for('outfit', outfit_id=p.outfit_id) }}" class="catalog-btn-detail">View</a>
+                                    <a href="{{ url_for('checkout', clothing_id=p.id) }}" class="catalog-btn-buy">Buy Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="catalog-no-results">
+                <h3>No favourites saved yet</h3>
+                <p>Browse our catalog or personalized recommendations to add outfits to your favourites.</p>
+                <a href="/" class="primary-button" style="display:inline-block; margin-top:16px;">Explore Catalog</a>
+            </div>
+        {% endif %}
+    </main>
+
+    <footer>
+        <div>© 2026 AI Style</div>
+        <a href="/privacy">Privacy & Security</a>
+    </footer>
+
+</body>
+</html>
+

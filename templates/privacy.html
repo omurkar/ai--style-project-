@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy & Return Guarantee | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .policy-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 50px 24px 90px;
+        }
+        .policy-header {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+        .policy-eyebrow {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .policy-header h1 {
+            font-size: 40px;
+            font-weight: 800;
+            color: #111;
+            margin: 0 0 15px;
+        }
+        .policy-header p {
+            color: #666;
+            font-size: 16px;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .policy-card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.03);
+        }
+        .policy-card h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111;
+            margin: 0 0 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .policy-card p {
+            color: #555;
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+        .policy-card ul {
+            margin: 0 0 20px 24px;
+            color: #555;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        .policy-card ul li {
+            margin-bottom: 8px;
+        }
+        .policy-highlight-box {
+            background: #f7f5f2;
+            border-left: 4px solid #111;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .policy-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #1b5e20;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .back-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            transition: color 0.2s ease;
+        }
+        .back-nav:hover {
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="logo">
+        <a href="{{ url_for('home') }}" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+    </div>
+    <nav>
+        <a href="{{ url_for('recommendations') }}">Recommendations</a>
+        <a href="{{ url_for('tryon') }}">TryOn Me</a>
+        <a href="{{ url_for('favourites') }}">Favourites</a>
+        <a href="{{ url_for('profile') }}" class="profile-avatar-link" title="My Profile">
+            <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+        </a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<main class="policy-container">
+    <a href="{{ url_for('recommendations') }}" class="back-nav">
+        ← Back to Shopping &amp; Recommendations
+    </a>
+
+    <div class="policy-header">
+        <div class="policy-eyebrow">Customer Commitment &amp; Trust</div>
+        <h1>Privacy, Return &amp; Customer Policy</h1>
+        <p>
+            At AI Style, we believe premium fashion should come with complete transparency, uncompromising privacy, and effortless returns.
+        </p>
+    </div>
+
+    <!-- 10-DAY RETURN POLICY -->
+    <div class="policy-card">
+        <span class="policy-badge">🔄 100% SATISFACTION GUARANTEED</span>
+        <h2>10-Day Easy Returns &amp; Exchange Policy</h2>
+        <p>
+            We want you to love everything you wear. If the size isn't right, the color doesn't match your expectations, or you simply change your mind, you can return or exchange any item within <strong>10 days of delivery</strong>.
+        </p>
+        <div class="policy-highlight-box">
+            <strong>Key Return Terms:</strong>
+            <ul style="margin: 8px 0 0 20px;">
+                <li><strong>10-Day Window:</strong> Return or exchange requests can be initiated within 10 calendar days from the date of package delivery.</li>
+                <li><strong>Condition:</strong> Garments must be unworn, unwashed, with original tags intact and in their original packaging.</li>
+                <li><strong>Free Doorstep Pickup:</strong> Our logistics partners will pick up the return directly from your delivery address at zero extra charge.</li>
+                <li><strong>Instant Refund / Store Credit:</strong> Once picked up and verified, your refund is processed within 24 to 48 hours directly to your original payment method or bank account.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- VIRTUAL TRY-ON PRIVACY -->
+    <div class="policy-card">
+        <span class="policy-badge" style="background:#e3f2fd; color:#0d47a1;">🔒 BIOMETRIC &amp; PHOTO SECURITY</span>
+        <h2>Virtual Try-On Privacy &amp; Data Protection</h2>
+        <p>
+            Your personal photos and facial features are sensitive information. We treat your uploaded images with bank-grade security and strict privacy controls:
+        </p>
+        <ul>
+            <li><strong>Local User-Controlled Processing:</strong> When you upload a photo or crop your face template, it is used exclusively to generate your personalized virtual try-on previews.</li>
+            <li><strong>Zero Public Dataset Training:</strong> We will <strong>NEVER</strong> share, sell, or license your photos to third parties or use them to train public AI models.</li>
+            <li><strong>Complete Data Control:</strong> You can replace, update, or permanently delete your stored face template at any time with a single click in your <a href="{{ url_for('profile') }}" style="color:#111; font-weight:700;">Account Settings</a>.</li>
+            <li><strong>Encrypted Storage:</strong> Images are kept in protected, isolated user buckets accessible only by your authenticated session.</li>
+        </ul>
+    </div>
+
+    <!-- SHIPPING POLICY -->
+    <div class="policy-card">
+        <span class="policy-badge" style="background:#fff3e0; color:#e65100;">🚚 EXPRESS DISPATCH</span>
+        <h2>Shipping &amp; Delivery Policy</h2>
+        <p>
+            We partner with premier courier networks to deliver your fashion orders swiftly and securely across India.
+        </p>
+        <ul>
+            <li><strong>Free Express Shipping:</strong> Available on all orders above ₹499.</li>
+            <li><strong>Delivery Timeline:</strong> Metro cities typically receive delivery within 2–3 business days; other regions within 3–5 business days.</li>
+            <li><strong>Real-Time Tracking:</strong> You will receive real-time SMS and WhatsApp updates with live tracking links once your package is dispatched.</li>
+            <li><strong>Cash on Delivery (COD):</strong> Available at almost all pincodes across India for maximum peace of mind.</li>
+        </ul>
+    </div>
+
+    <!-- GENUINE QUALITY -->
+    <div class="policy-card">
+        <span class="policy-badge" style="background:#f3e5f5; color:#6a1b9a;">🛡️ 100% QUALITY GUARANTEE</span>
+        <h2>Authenticity &amp; Craftsmanship</h2>
+        <p>
+            Every piece featured on AI Style is sourced from certified manufacturers and vetted textile artisans. We enforce a 3-stage quality check inspecting seam strength, fabric purity, colorfastness, and dimensional stability before any garment leaves our fulfillment centers.
+        </p>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <span>© 2026 AI Style · All Rights Reserved</span>
+        <a href="{{ url_for('privacy') }}">Privacy &amp; Security</a>
+    </div>
+</footer>
+
+</body>
+</html>
+

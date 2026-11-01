@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ outfit.outfit_name }} | AI Style</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <style>
+
+        .outfit-details-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 50px 24px 80px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #000;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 45px;
+            align-items: start;
+        }
+
+        .product-visual {
+            position: sticky;
+            top: 25px;
+        }
+
+        .product-box {
+            min-height: 520px;
+            border-radius: 25px;
+            background: #f3efeb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 150px;
+            border: 1px solid #e8e2dd;
+        }
+
+        .product-image-box {
+            min-height: 520px;
+            max-height: 620px;
+            border-radius: 25px;
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: zoom-in;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .product-image-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.09);
+        }
+
+        .product-main-img {
+            width: 100%;
+            height: 100%;
+            max-height: 590px;
+            object-fit: contain;
+            display: block;
+            padding: 18px;
+            transition: transform 0.35s ease;
+        }
+
+        .product-image-box:hover .product-main-img {
+            transform: scale(1.025);
+        }
+
+        .zoom-pill {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: rgba(17, 17, 17, 0.85);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        /* LIGHTBOX MODAL */
+        .outfit-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.94);
+            backdrop-filter: blur(12px);
+            z-index: 999999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        .outfit-lightbox-toolbar {
+            position: absolute;
+            top: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(30, 30, 30, 0.85);
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 1000000;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .outfit-lightbox-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 7px 12px;
+            border-radius: 8px;
+            transition: background 0.18s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .outfit-lightbox-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .outfit-lightbox-stage {
+            width: 90vw;
+            height: 84vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .outfit-lightbox-stage:active {
+            cursor: grabbing;
+        }
+
+        .outfit-lightbox-img {
+            max-width: 88vw;
+            max-height: 82vh;
+            object-fit: contain;
+            transition: transform 0.15s ease-out;
+            transform-origin: center center;
+            pointer-events: auto;
+        }
+
+        .eyebrow {
+            color: #777;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .detail-content h1 {
+            font-size: 42px;
+            line-height: 1.15;
+            margin: 0 0 15px;
+        }
+
+        .price {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .description {
+            color: #666;
+            line-height: 1.7;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-bottom: 30px;
+        }
+
+        .tag {
+            background: #f5f2ef;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 8px 13px;
+            font-size: 12px;
+        }
+
+        .info-card {
+            background: #faf8f6;
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 25px;
+        }
+
+        .info-card h3 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 18px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 170px 1fr;
+            gap: 15px;
+            padding: 11px 0;
+            border-bottom: 1px solid #e8e3df;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #555;
+        }
+
+        .why-box {
+            background: #f7f4f1;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .why-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .why-box p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .primary-button,
+        .secondary-button {
+            display: inline-block;
+            text-decoration: none;
+            padding: 13px 19px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .primary-button {
+            background: #111;
+            color: white;
+        }
+
+        .secondary-button {
+            background: white;
+            color: #111;
+            border: 1px solid #ccc;
+        }
+
+        @media (max-width: 800px) {
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-visual {
+                position: static;
+            }
+
+            .product-box {
+                min-height: 350px;
+                font-size: 110px;
+            }
+
+            .detail-content h1 {
+                font-size: 34px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        AI<span>Style</span>
+    </div>
+
+    <nav>
+
+        <a href="/recommendations">
+            Recommendations
+        </a>
+
+        <a href="/tryon">
+            TryOn Me
+        </a>
+
+        {% if session.get('user_role') == 'admin' %}
+        <a href="/admin" style="font-weight: 700; color: #111;">
+            Admin Panel
+        </a>
+        {% endif %}
+
+        <a href="/favourites">
+            Favourites
+        </a>
+
+        <a href="/profile" class="profile-avatar-link" title="My Profile">
+            <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </nav>
+
+</header>
+
+
+<main class="outfit-details-page">
+
+
+    <a
+        href="/recommendations"
+        class="back-link"
+    >
+        ← Back to Recommendations
+    </a>
+
+
+    <div class="detail-grid">
+
+
+        <!-- LEFT: OUTFIT VISUAL -->
+
+        <section class="product-visual">
+
+            {% if outfit.image_path %}
+
+                <div 
+                    class="product-image-box" 
+                    id="productImageBox"
+                    onclick="openOutfitLightbox('/{{ outfit.image_path }}', '{{ outfit.outfit_name }}')"
+                    title="Click to zoom and inspect photo"
+                >
+
+                    <img 
+                        src="/{{ outfit.image_path }}" 
+                        alt="{{ outfit.outfit_name }}" 
+                        class="product-main-img"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    >
+
+                    <div class="product-box" style="display: none;">
+                        {% if outfit.clothing_type and 'Dress' in outfit.clothing_type %}
+                            👗
+                        {% elif outfit.clothing_type and ('Trouser' in outfit.clothing_type or 'Pant' in outfit.clothing_type) %}
+                            👖
+                        {% elif outfit.clothing_type and ('Shirt' in outfit.clothing_type or 'Top' in outfit.clothing_type) %}
+                            👚
+                        {% elif outfit.clothing_type and ('Traditional' in outfit.clothing_type) %}
+                            🥻
+                        {% else %}
+                            👕
+                        {% endif %}
+                    </div>
+
+                    <div class="zoom-pill">
+                        <span>🔍 Click to Zoom &amp; Inspect</span>
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div class="product-box">
+
+                    {% if outfit.clothing_type and 'Dress' in outfit.clothing_type %}
+
+                        👗
+
+                    {% elif outfit.clothing_type and
+                          ('Trouser' in outfit.clothing_type or
+                           'Pant' in outfit.clothing_type) %}
+
+                        👖
+
+                    {% elif outfit.clothing_type and
+                          ('Shirt' in outfit.clothing_type or
+                           'Top' in outfit.clothing_type) %}
+
+                        👚
+
+                    {% elif outfit.clothing_type and
+                          ('Traditional' in outfit.clothing_type) %}
+
+                        🥻
+
+                    {% else %}
+
+                        👕
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- RIGHT: DETAILS -->
+
+        <section class="detail-content">
+
+
+            <div class="eyebrow">
+
+                {{ outfit.category }}
+                ·
+                {{ outfit.occasion or 'Everyday' }}
+
+            </div>
+
+
+            <h1>
+
+                {{ outfit.outfit_name }}
+
+            </h1>
+
+
+            <div class="price">
+
+                ₹{{ '%.0f'|format(outfit.price or 0) }}
+
+            </div>
+
+
+            <p class="description">
+
+                {% if outfit.description %}
+
+                    {{ outfit.description }}
+
+                {% else %}
+
+                    This outfit is selected from the
+                    AI Style clothing database based on
+                    your personalized style profile.
+
+                {% endif %}
+
+            </p>
+
+
+            <!-- BASIC TAGS -->
+
+            <div class="tag-row">
+
+
+                {% if outfit.colour %}
+
+                    <span class="tag">
+                        🎨 Colour:
+                        {{ outfit.colour }}
+                    </span>
+
+                {% endif %}
+
+
+                {% if outfit.pattern %}
+
+                    <span class="tag">
+                        Pattern:
+                        {{ outfit.pattern }}
+                    </span>
+
+                {% endif %}
+
+
+                {% if outfit.style %}
+
+                    <span class="tag">
+                        Style:
+                        {{ outfit.style }}
+                    </span>
+
+                {% endif %}
+
+
+                {% if outfit.fit %}
+
+                    <span class="tag">
+                        Fit:
+                        {{ outfit.fit }}
+                    </span>
+
+                {% endif %}
+
+
+            </div>
+
+
+            <!-- OUTFIT INFORMATION -->
+
+            <div class="info-card">
+
+                <h3>
+                    Outfit Information
+                </h3>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Outfit ID
+                    </div>
+
+                    <div>
+                        {{ outfit.outfit_id }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Clothing Type
+                    </div>
+
+                    <div>
+                        {{ outfit.clothing_type or 'Not specified' }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Suitable Body Shapes
+                    </div>
+
+                    <div>
+                        {{ outfit.suitable_body_shapes or 'Not specified' }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Suitable Skin Tones
+                    </div>
+
+                    <div>
+                        {{ outfit.suitable_skin_tones or 'Not specified' }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Suitable Undertones
+                    </div>
+
+                    <div>
+                        {{ outfit.suitable_undertones or 'Not specified' }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Suitable Proportions
+                    </div>
+
+                    <div>
+                        {{ outfit.suitable_proportion_types or 'Not specified' }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Height Range
+                    </div>
+
+                    <div>
+
+                        {% if outfit.min_height_cm and outfit.max_height_cm %}
+
+                            {{ '%.0f'|format(outfit.min_height_cm) }}
+                            cm -
+                            {{ '%.0f'|format(outfit.max_height_cm) }}
+                            cm
+
+                        {% else %}
+
+                            Not specified
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <div class="info-label">
+                        Store
+                    </div>
+
+                    <div>
+                        {{ outfit.product_store or 'AI Style Demo Catalogue' }}
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- WHY THIS OUTFIT -->
+
+            <div class="why-box">
+
+                <strong>
+                    ✨ Why this outfit?
+                </strong>
+
+                <p>
+
+                    This outfit has been selected from
+                    the clothing database according to
+                    the user's category, body shape,
+                    skin tone, undertone, body proportions
+                    and height compatibility.
+
+                </p>
+
+            </div>
+
+
+            <!-- ACTIVE FACE TEMPLATE NOTICE -->
+            <div style="display: flex; align-items: center; gap: 12px; background: #fff8ee; border: 1.5px solid #ebd8be; padding: 10px 16px; border-radius: 16px; margin-bottom: 20px;">
+                <div style="width: 38px; height: 50px; border-radius: 50% / 55%; overflow: hidden; background: #f0ebe4; border: 2px solid #e8b87d; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <img
+                        src="/user-face-template?t={{ outfit.id }}"
+                        alt="Your Face Template"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                    >
+                    <span style="display:none; font-size:18px;">👤</span>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 700; color: #111;">
+                        Your Face Template is Active
+                    </div>
+                    <div style="font-size: 12px; color: #66552a;">
+                        Clicking &ldquo;Try This Look&rdquo; will seamlessly preview your face wearing this outfit.
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ACTION BUTTONS -->
+            <div class="actions">
+
+                <a
+                    class="primary-button"
+                    href="{{ url_for('tryon', clothing_id=outfit.id) }}"
+                >
+                    ✨ Try This Look →
+                </a>
+
+                <a
+                    class="primary-button"
+                    style="background: #0d8244; color: white;"
+                    href="{{ url_for('checkout', clothing_id=outfit.id) }}"
+                >
+                    🛒 Buy Now &amp; Checkout →
+                </a>
+
+                <a
+                    href="/recommendations"
+                    class="secondary-button"
+                >
+                    ← More Recommendations
+                </a>
+
+            </div>
+
+
+        </section>
+
+
+    </div>
+
+
+</main>
+
+
+<footer>
+
+    <div>
+        © 2026 AI Style
+    </div>
+
+    <a href="/privacy">
+        Privacy &amp; Security
+    </a>
+
+</footer>
+
+
+<!-- INTERACTIVE FULLSCREEN IMAGE LIGHTBOX -->
+<div id="outfitLightbox" class="outfit-lightbox" onclick="handleLightboxClick(event)">
+    <div class="outfit-lightbox-toolbar">
+        <button type="button" class="outfit-lightbox-btn" onclick="zoomIn()" title="Zoom In (+)">🔍 +</button>
+        <button type="button" class="outfit-lightbox-btn" onclick="zoomOut()" title="Zoom Out (-)">🔍 -</button>
+        <button type="button" class="outfit-lightbox-btn" onclick="resetZoom()" title="Reset Zoom">🔄 <span id="zoomPercentText">100%</span></button>
+        <a id="openNewTabBtn" href="#" target="_blank" class="outfit-lightbox-btn" title="Open Image in Full Size New Window">↗ Open Full Size</a>
+        <button type="button" class="outfit-lightbox-btn" onclick="closeOutfitLightbox()" title="Close Viewer (Esc)">✕ Close</button>
+    </div>
+    <div class="outfit-lightbox-stage" id="lightboxStage">
+        <img id="lightboxImg" src="" alt="Outfit Visual" class="outfit-lightbox-img">
+    </div>
+</div>
+
+<script>
+    let currentZoom = 1;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let translateX = 0, translateY = 0;
+
+    function openOutfitLightbox(imageSrc, title) {
+        const modal = document.getElementById('outfitLightbox');
+        const img = document.getElementById('lightboxImg');
+        const newTabBtn = document.getElementById('openNewTabBtn');
+        
+        img.src = imageSrc;
+        img.alt = title || 'Clothing Item';
+        newTabBtn.href = imageSrc;
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        resetZoom();
+    }
+
+    function closeOutfitLightbox() {
+        const modal = document.getElementById('outfitLightbox');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        resetZoom();
+    }
+
+    function updateTransform() {
+        const img = document.getElementById('lightboxImg');
+        img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+        document.getElementById('zoomPercentText').textContent = Math.round(currentZoom * 100) + '%';
+    }
+
+    function zoomIn() {
+        if (currentZoom < 4) {
+            currentZoom = Math.min(4, currentZoom + 0.35);
+            updateTransform();
+        }
+    }
+
+    function zoomOut() {
+        if (currentZoom > 0.6) {
+            currentZoom = Math.max(0.6, currentZoom - 0.35);
+            if (currentZoom <= 1) {
+                translateX = 0;
+                translateY = 0;
+            }
+            updateTransform();
+        }
+    }
+
+    function resetZoom() {
+        currentZoom = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+    }
+
+    function handleLightboxClick(event) {
+        if (event.target.id === 'outfitLightbox' || event.target.id === 'lightboxStage') {
+            closeOutfitLightbox();
+        }
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeOutfitLightbox();
+        } else if (e.key === '+' || e.key === '=') {
+            zoomIn();
+        } else if (e.key === '-') {
+            zoomOut();
+        }
+    });
+
+    // Mouse wheel zoom
+    const stage = document.getElementById('lightboxStage');
+    if (stage) {
+        stage.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        }, { passive: false });
+
+        // Drag to pan when zoomed
+        stage.addEventListener('mousedown', function(e) {
+            if (currentZoom > 1) {
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            }
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            }
+        });
+
+        window.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+
+        // Double click to toggle 1x and 2x zoom
+        stage.addEventListener('dblclick', function() {
+            if (currentZoom > 1) {
+                resetZoom();
+            } else {
+                currentZoom = 2;
+                updateTransform();
+            }
+        });
+    }
+</script>
+
+</body>
+
+</html>

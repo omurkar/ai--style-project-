@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Recommendations | AI Style</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <style>
+
+        .recommendations-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 24px 80px;
+        }
+
+        .recommendation-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 30px;
+            margin-bottom: 35px;
+        }
+
+        .page-label {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #777;
+            margin-bottom: 12px;
+        }
+
+        .recommendation-heading h1 {
+            font-size: 48px;
+            line-height: 1.1;
+            margin: 0 0 18px;
+        }
+
+        .recommendation-heading h1 span {
+            display: block;
+        }
+
+        .recommendation-heading p {
+            color: #666;
+            font-size: 17px;
+            line-height: 1.7;
+            max-width: 680px;
+            margin: 0;
+        }
+
+        .outline-button {
+            padding: 13px 22px;
+            border: 1px solid #222;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .profile-summary {
+            background: #f8f6f3;
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 35px;
+        }
+
+        .summary-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            margin-bottom: 22px;
+        }
+
+        .summary-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .summary-tags span {
+            background: white;
+            border: 1px solid #e5e0dc;
+            border-radius: 30px;
+            padding: 11px 18px;
+            font-size: 14px;
+        }
+
+        .recommendation-filters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 45px;
+        }
+
+        .recommendation-filters label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-filters select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #d8d4d0;
+            border-radius: 10px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .results-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .results-heading h2 {
+            margin: 0 0 7px;
+            font-size: 28px;
+        }
+
+        .results-heading p {
+            margin: 0;
+            color: #777;
+        }
+
+        .results-count {
+            color: #666;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .outfit-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .outfit-card {
+            background: white;
+            border: 1px solid #ebe7e3;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .outfit-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+
+        .outfit-image {
+            height: 240px;
+            background: #f4f1ee;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .outfit-placeholder {
+            font-size: 70px;
+        }
+
+        .match-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #111;
+            color: white;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .heart-button {
+            position: absolute;
+            top: 13px;
+            right: 13px;
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 50%;
+            background: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .outfit-content {
+            padding: 22px;
+        }
+
+        .outfit-category {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: #888;
+            margin: 0 0 9px;
+            text-transform: uppercase;
+        }
+
+        .outfit-content h3 {
+            font-size: 20px;
+            margin: 0 0 10px;
+        }
+
+        .outfit-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 45px;
+            margin-bottom: 15px;
+        }
+
+        .outfit-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 18px;
+        }
+
+        .outfit-tags span {
+            background: #f5f2ef;
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+        }
+
+        .match-reason {
+            background: #faf9f7;
+            border-radius: 12px;
+            padding: 13px;
+            margin-bottom: 18px;
+        }
+
+        .match-reason strong {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .match-reason p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .outfit-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .outfit-bottom strong {
+            font-size: 19px;
+        }
+
+        .small-button {
+            text-decoration: none;
+            background: #111;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 9px;
+            font-size: 13px;
+        }
+
+        .no-results {
+            background: #faf8f5;
+            border-radius: 18px;
+            padding: 45px 25px;
+            text-align: center;
+            color: #666;
+        }
+
+        .no-results h3 {
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 900px) {
+
+            .outfit-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .recommendation-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+        }
+
+        @media (max-width: 650px) {
+
+            .recommendations-page {
+                padding: 30px 16px 60px;
+            }
+
+            .recommendation-heading h1 {
+                font-size: 36px;
+            }
+
+            .recommendation-filters {
+                grid-template-columns: 1fr;
+            }
+
+            .outfit-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .summary-tags {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        AI<span>Style</span>
+    </div>
+
+    <nav>
+
+        <a href="/tryon">
+            TryOn Me
+        </a>
+
+        {% if session.get('user_role') == 'admin' %}
+        <a href="/admin" style="font-weight: 700; color: #111;">
+            Admin Panel
+        </a>
+        {% endif %}
+
+        <a href="/favourites">
+            Favourites
+        </a>
+
+        <a href="/profile" class="profile-avatar-link" title="My Profile">
+            <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </nav>
+
+</header>
+
+
+<main class="recommendations-page">
+
+
+    <!-- PAGE HEADING -->
+
+    <div class="recommendation-heading">
+
+        <div>
+
+            <p class="page-label">
+                STEP 03
+            </p>
+
+            <h1>
+                Curated
+                <span>Just For You.</span>
+            </h1>
+
+            <p>
+                Based on your AI style profile and preferences,
+                these outfits have been selected specifically
+                for you.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- USER STYLE PROFILE & ACTIVE FACE TEMPLATE -->
+
+    <section class="profile-summary">
+
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid #ebe5df;">
+
+            <div class="summary-title" style="margin-bottom: 0;">
+
+                <span>✨</span>
+
+                <strong>
+                    Your Style Profile &amp; Face Template
+                </strong>
+
+            </div>
+
+            <div style="display: inline-flex; align-items: center; gap: 12px; background: #fff; padding: 6px 16px 6px 8px; border-radius: 30px; border: 1.5px solid #e2d8cd; box-shadow: 0 4px 14px rgba(0,0,0,0.04);">
+                <div style="width: 38px; height: 50px; border-radius: 50% / 55%; overflow: hidden; background: #f0ebe4; border: 2px solid #e8b87d; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    <img
+                        src="/user-face-template?t={{ session.get('user_id') }}"
+                        alt="Face Template"
+                        style="width: 100%; height: 100%; object-fit: cover;"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                    >
+                    <span style="display:none; font-size:18px;">👤</span>
+                </div>
+                <div>
+                    <strong style="font-size: 13px; color: #111; display: block;">Face Template Active</strong>
+                    <span style="font-size: 11px; color: #0b7c3d; font-weight: 700;">✓ Ready for All Clothes</span>
+                </div>
+                <a href="/profile" style="font-size: 11px; font-weight: 700; color: #666; text-decoration: none; padding: 4px 10px; border-radius: 12px; background: #f4efe9; margin-left: 4px;">Update</a>
+            </div>
+
+        </div>
+
+
+        <div class="summary-tags">
+
+            <span>
+                👤
+                {{ profile.category or 'Not Set' }}
+            </span>
+
+            <span>
+                🎨
+                {{ profile.skin_tone or 'Not Set' }}
+                Skin Tone
+            </span>
+
+            <span>
+                🌡️
+                {{ profile.undertone or 'Not Set' }}
+                Undertone
+            </span>
+
+            <span>
+                🔷
+                {{ profile.body_shape or 'Not Applicable' }}
+                Shape
+            </span>
+
+            <span>
+                📏
+                {% if profile.height_cm %}
+                    {{ '%.0f'|format(profile.height_cm) }} cm
+                {% else %}
+                    Not Set
+                {% endif %}
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- FILTERS -->
+
+    <form
+        method="GET"
+        action="{{ url_for('recommendations') }}"
+        class="recommendation-filters"
+    >
+
+        <div>
+
+            <label for="occasion">
+                Occasion
+            </label>
+
+            <select
+                id="occasion"
+                name="occasion"
+                onchange="this.form.submit()"
+            >
+
+                <option
+                    value="All Occasions"
+                    {% if occasion == 'All Occasions' %}
+                        selected
+                    {% endif %}
+                >
+                    All Occasions
+                </option>
+
+                <option
+                    value="Casual"
+                    {% if occasion == 'Casual' %}
+                        selected
+                    {% endif %}
+                >
+                    Casual
+                </option>
+
+                <option
+                    value="Office"
+                    {% if occasion == 'Office' %}
+                        selected
+                    {% endif %}
+                >
+                    Office
+                </option>
+
+                <option
+                    value="Party"
+                    {% if occasion == 'Party' %}
+                        selected
+                    {% endif %}
+                >
+                    Party
+                </option>
+
+                <option
+                    value="Wedding"
+                    {% if occasion == 'Wedding' %}
+                        selected
+                    {% endif %}
+                >
+                    Wedding
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div>
+
+            <label for="style">
+                Style
+            </label>
+
+            <select
+                id="style"
+                name="style"
+                onchange="this.form.submit()"
+            >
+
+                <option
+                    value="All Styles"
+                    {% if style == 'All Styles' %}
+                        selected
+                    {% endif %}
+                >
+                    All Styles
+                </option>
+
+                <option
+                    value="Casual"
+                    {% if style == 'Casual' %}
+                        selected
+                    {% endif %}
+                >
+                    Casual
+                </option>
+
+                <option
+                    value="Formal"
+                    {% if style == 'Formal' %}
+                        selected
+                    {% endif %}
+                >
+                    Formal
+                </option>
+
+                <option
+                    value="Traditional"
+                    {% if style == 'Traditional' %}
+                        selected
+                    {% endif %}
+                >
+                    Traditional
+                </option>
+
+                <option
+                    value="Streetwear"
+                    {% if style == 'Streetwear' %}
+                        selected
+                    {% endif %}
+                >
+                    Streetwear
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div>
+
+            <label for="budget">
+                Budget
+            </label>
+
+            <select
+                id="budget"
+                name="budget"
+                onchange="this.form.submit()"
+            >
+
+                <option
+                    value="Any Budget"
+                    {% if budget == 'Any Budget' %}
+                        selected
+                    {% endif %}
+                >
+                    Any Budget
+                </option>
+
+                <option
+                    value="Under ₹1,000"
+                    {% if budget == 'Under ₹1,000' %}
+                        selected
+                    {% endif %}
+                >
+                    Under ₹1,000
+                </option>
+
+                <option
+                    value="₹1,000 – ₹2,500"
+                    {% if budget == '₹1,000 – ₹2,500' %}
+                        selected
+                    {% endif %}
+                >
+                    ₹1,000 – ₹2,500
+                </option>
+
+                <option
+                    value="₹2,500 – ₹5,000"
+                    {% if budget == '₹2,500 – ₹5,000' %}
+                        selected
+                    {% endif %}
+                >
+                    ₹2,500 – ₹5,000
+                </option>
+
+                <option
+                    value="₹5,000+"
+                    {% if budget == '₹5,000+' %}
+                        selected
+                    {% endif %}
+                >
+                    ₹5,000+
+                </option>
+
+            </select>
+
+        </div>
+
+    </form>
+
+
+    <!-- RESULTS HEADING -->
+
+    <div class="results-heading">
+
+        <div>
+
+            <h2>
+                Recommended For You
+            </h2>
+
+            <p>
+                Personalized matches based on your profile.
+            </p>
+
+        </div>
+
+        <span class="results-count">
+
+            {{ recommendations|length }}
+            outfits found
+
+        </span>
+
+    </div>
+
+
+    <!-- RECOMMENDATIONS -->
+
+    {% if recommendations %}
+
+        <section class="outfit-grid">
+
+
+            {% for outfit in recommendations %}
+
+                <article class="outfit-card">
+
+
+                    <!-- OUTFIT IMAGE -->
+
+                    <div class="outfit-image" style="overflow: hidden;">
+
+                        {% if outfit.image_path %}
+                            <img 
+                                src="/{{ outfit.image_path }}" 
+                                alt="{{ outfit.outfit_name }}"
+                                style="width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 10px;"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            >
+                            <div class="outfit-placeholder" style="display: none;">
+                                {% if outfit.clothing_type and 'Dress' in outfit.clothing_type %}
+                                    👗
+                                {% elif outfit.clothing_type and
+                                      ('Trouser' in outfit.clothing_type or
+                                       'Pant' in outfit.clothing_type) %}
+                                    👖
+                                {% elif outfit.clothing_type and
+                                      ('Shirt' in outfit.clothing_type or
+                                       'Top' in outfit.clothing_type) %}
+                                    👚
+                                {% else %}
+                                    👕
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="outfit-placeholder">
+                                {% if outfit.clothing_type and 'Dress' in outfit.clothing_type %}
+                                    👗
+                                {% elif outfit.clothing_type and
+                                      ('Trouser' in outfit.clothing_type or
+                                       'Pant' in outfit.clothing_type) %}
+                                    👖
+                                {% elif outfit.clothing_type and
+                                      ('Shirt' in outfit.clothing_type or
+                                       'Top' in outfit.clothing_type) %}
+                                    👚
+                                {% else %}
+                                    👕
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+
+                        <span class="match-badge">
+
+                            {{ outfit.match_score|default(0) }}% Match
+
+                        </span>
+
+
+                        <button
+                            type="button"
+                            class="heart-button"
+                            title="Save to favourites"
+                        >
+                            ♡
+                        </button>
+
+                    </div>
+
+
+                    <!-- OUTFIT INFORMATION -->
+
+                    <div class="outfit-content">
+
+
+                        <p class="outfit-category">
+
+                            {{ outfit.occasion or 'Style' }}
+                            •
+                            {{ outfit.category }}
+
+                        </p>
+
+
+                        <h3>
+
+                            {{ outfit.outfit_name }}
+
+                        </h3>
+
+
+                        <p class="outfit-description">
+
+                            {% if outfit.description %}
+
+                                {{ outfit.description }}
+
+                            {% else %}
+
+                                A personalized
+                                {{ outfit.style or 'stylish' }}
+                                look selected according to
+                                your AI style profile.
+
+                            {% endif %}
+
+                        </p>
+
+
+                        <!-- TAGS -->
+
+                        <div class="outfit-tags">
+
+
+                            {% if outfit.suitable_body_shapes %}
+
+                                <span>
+
+                                    {{ outfit.suitable_body_shapes }}
+
+                                </span>
+
+                            {% endif %}
+
+
+                            {% if outfit.suitable_undertones %}
+
+                                <span>
+
+                                    {{ outfit.suitable_undertones }}
+
+                                </span>
+
+                            {% endif %}
+
+
+                            {% if outfit.style %}
+
+                                <span>
+
+                                    {{ outfit.style }}
+
+                                </span>
+
+                            {% endif %}
+
+
+                            {% if outfit.fit %}
+
+                                <span>
+
+                                    {{ outfit.fit }}
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </div>
+
+
+                        <!-- WHY RECOMMENDED -->
+
+                        <div class="match-reason">
+
+                            <strong>
+                                Why we recommend it
+                            </strong>
+
+                            <p>
+
+                                {{ outfit.why_recommended or
+                                   'This outfit matches several characteristics of your personalized style profile.' }}
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- PRICE + VIEW -->
+
+                        <div class="outfit-bottom">
+
+                            <strong>
+
+                                ₹{{ '%.0f'|format(outfit.price or 0) }}
+
+                            </strong>
+
+
+                         <a
+    href="/outfit?outfit_id={{ outfit.outfit_id }}"
+    class="small-button"
+>
+    View Outfit →
+</a>
+
+                        </div>
+
+
+                    </div>
+
+                </article>
+
+
+            {% endfor %}
+
+
+        </section>
+
+
+    {% else %}
+
+        <div class="no-results">
+
+            <h3>
+                No outfits found
+            </h3>
+
+            <p>
+                No outfits match the selected filters.
+                Try another occasion, style or budget.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+
+</main>
+
+
+<footer>
+
+    <div>
+        © 2026 AI Style
+    </div>
+
+    <a href="/privacy">
+        Privacy & Security
+    </a>
+
+</footer>
+
+
+</body>
+
+</html>

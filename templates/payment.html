@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Payment Gateway | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .payment-page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            align-items: start;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+        }
+        .qr-card {
+            text-align: center;
+            background: #ffffff;
+            border: 2px solid #111;
+            border-radius: 22px;
+            padding: 35px 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        .qr-container {
+            background: #faf7f4;
+            display: inline-block;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid #e8e2dd;
+            margin: 15px 0;
+        }
+        .qr-container img {
+            max-width: 230px;
+            display: block;
+            border-radius: 8px;
+        }
+        .amount-pill {
+            display: inline-block;
+            background: #111;
+            color: #fff;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 24px;
+            font-weight: 800;
+            margin: 8px 0;
+            letter-spacing: -0.5px;
+        }
+        .upi-id-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f4efe9;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 12px 0 18px;
+            color: #222;
+        }
+        .btn-copy {
+            background: #ffffff;
+            border: 1px solid #ccc;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-upi-mobile {
+            display: block;
+            width: 100%;
+            background: #1a73e8;
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+        }
+        .btn-upi-mobile:hover {
+            background: #1558b0;
+        }
+        .supported-apps {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 11px;
+            color: #777;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-top: 15px;
+        }
+        .confirm-form {
+            margin-top: 25px;
+            border-top: 1px solid #f0eae4;
+            padding-top: 20px;
+            text-align: left;
+        }
+        .confirm-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .confirm-form input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd6cf;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 12px;
+            background: #faf8f5;
+        }
+        .btn-confirm {
+            width: 100%;
+            background: #0d8244;
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-confirm:hover {
+            background: #096333;
+        }
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .order-row strong {
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+        </div>
+        <nav>
+            <span style="font-size: 13px; font-weight: 700; color: #0d8244;">🔒 256-Bit Encrypted Payment</span>
+        </nav>
+    </header>
+
+    <div class="payment-page">
+        <div style="text-align: center; margin-bottom: 35px;">
+            <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #777;">
+                Step 2 of 2 · Custom UPI Payment Gateway
+            </span>
+            <h1 style="font-size: 32px; margin: 8px 0;">Scan &amp; Pay with Google Pay UPI</h1>
+            <p style="color: #666; font-size: 15px; margin: 0;">
+                The QR code below is dynamically configured with your exact order amount.
+            </p>
+        </div>
+
+        <div class="payment-grid">
+
+            <!-- LEFT: DYNAMIC QR CODE DISPLAY -->
+            <div class="qr-card">
+                <span style="font-size: 12px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 1px;">
+                    Scan with any UPI App
+                </span>
+
+                <div class="amount-pill">
+                    ₹{{ '%.2f'|format(order.price * order.quantity) }}
+                </div>
+
+                <div class="qr-container">
+                    <img src="{{ qr_data.qr_base64 }}" alt="Dynamic Google Pay UPI QR Code">
+                </div>
+
+                <div class="upi-id-box">
+                    <span>Payee: <strong id="upiIdText">{{ qr_data.upi_id }}</strong></span>
+                    <button type="button" class="btn-copy" onclick="copyUpiId()">Copy</button>
+                </div>
+
+                <!-- Deep Link Intent for Mobile -->
+                <a href="{{ qr_data.payload }}" class="btn-upi-mobile">
+                    ⚡ Tap to Pay via UPI App (Mobile)
+                </a>
+
+                <div class="supported-apps">
+                    <span>Google Pay</span> · <span>PhonePe</span> · <span>Paytm</span> · <span>BHIM</span>
+                </div>
+            </div>
+
+            <!-- RIGHT: ORDER DETAILS & PAYMENT CONFIRMATION -->
+            <div class="card">
+                <h3 style="font-size: 18px; margin-bottom: 18px; border-bottom: 1px solid #f0eae4; padding-bottom: 12px;">
+                    Order Verification
+                </h3>
+
+                <div class="order-row">
+                    <span style="color: #666;">Order ID:</span>
+                    <strong>{{ order.order_id }}</strong>
+                </div>
+
+                <div class="order-row">
+                    <span style="color: #666;">Item:</span>
+                    <strong>{{ order.product_name }}</strong>
+                </div>
+
+                <div class="order-row">
+                    <span style="color: #666;">Selected Size:</span>
+                    <strong>Size {{ order.size }}</strong>
+                </div>
+
+                <div class="order-row">
+                    <span style="color: #666;">Quantity:</span>
+                    <strong>{{ order.quantity }}</strong>
+                </div>
+
+                <div class="order-row">
+                    <span style="color: #666;">Delivery Recipient:</span>
+                    <strong>{{ order.delivery_name }}</strong>
+                </div>
+
+                <div class="order-row">
+                    <span style="color: #666;">Delivery PIN Code:</span>
+                    <strong>{{ order.delivery_postal_code }}</strong>
+                </div>
+
+                {% if order.latitude and order.longitude %}
+                <div class="order-row">
+                    <span style="color: #666;">GPS Coordinates:</span>
+                    <strong style="color: #0d8244;">📍 {{ '%.4f'|format(order.latitude) }}, {{ '%.4f'|format(order.longitude) }}</strong>
+                </div>
+                {% endif %}
+
+                <div class="order-row" style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #e8e2dd; font-size: 18px;">
+                    <span>Total Amount:</span>
+                    <strong style="color: #111;">₹{{ '%.2f'|format(order.price * order.quantity) }}</strong>
+                </div>
+
+                <!-- Payment Confirmation Form -->
+                <form method="POST" action="{{ url_for('payment_confirm', order_id=order.order_id) }}" class="confirm-form">
+                    <label for="upi_reference_id">UPI Ref No. / Transaction ID (Optional / Auto-Verify)</label>
+                    <input type="text" id="upi_reference_id" name="upi_reference_id" 
+                           placeholder="e.g. 331405928172 (or leave blank to verify)">
+
+                    <button type="submit" class="btn-confirm">
+                        ✓ I Have Completed Payment
+                    </button>
+                    <p style="font-size: 11px; color: #888; text-align: center; margin-top: 8px;">
+                        Once you complete the scan in your UPI app, click above to verify and receive order tracking details.
+                    </p>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function copyUpiId() {
+            const text = document.getElementById('upiIdText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("UPI ID copied to clipboard: " + text);
+            }).catch(() => {
+                prompt("Copy UPI ID:", text);
+            });
+        }
+    </script>
+
+</body>
+</html>
+

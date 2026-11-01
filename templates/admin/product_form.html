@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit Outfit' if product else 'Upload New Outfit' }} | Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_face_marker.css') }}">
+    <style>
+        .form-page {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+        .form-header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #f0eae4;
+            padding-bottom: 18px;
+        }
+        .form-header h1 {
+            font-size: 28px;
+            margin: 0 0 8px;
+        }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 22px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd6cf;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #faf8f5;
+        }
+        .sizes-checkbox-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .size-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #faf7f4;
+            border: 1px solid #ded6cf;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .current-image-preview {
+            max-width: 120px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+        .btn-submit {
+            background: #111;
+            color: white;
+            padding: 13px 28px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background: #333;
+        }
+        .btn-cancel {
+            display: inline-block;
+            margin-left: 15px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+        </div>
+        <nav>
+            <a href="/admin">← Back to Admin Dashboard</a>
+        </nav>
+    </header>
+
+    <div class="form-page">
+        <div class="form-card">
+            <div class="form-header">
+                <h1>{{ 'Edit Clothing Asset' if product else 'Upload New Clothing Asset' }}</h1>
+                <p style="color: #666; margin: 0;">
+                    Image assets are securely stored in the local clothing database (storage/clothing/) and synced with your Firebase project.
+                </p>
+            </div>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}" style="margin-bottom: 20px;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="outfit_name">Outfit / Product Name *</label>
+                        <input type="text" id="outfit_name" name="outfit_name" 
+                               value="{{ product.outfit_name if product else '' }}" 
+                               placeholder="e.g. Elegant Silk Linen Blend Shirt" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="outfit_id">Outfit SKU / Unique ID</label>
+                        <input type="text" id="outfit_id" name="outfit_id" 
+                               value="{{ product.outfit_id if product else '' }}" 
+                               placeholder="e.g. M105, W020 (auto-generated if empty)">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="Men" {{ 'selected' if product and product.category == 'Men' else '' }}>Men</option>
+                            <option value="Women" {{ 'selected' if product and product.category == 'Women' else '' }}>Women</option>
+                            <option value="Unisex" {{ 'selected' if product and product.category == 'Unisex' else '' }}>Unisex</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clothing_type">Clothing Type *</label>
+                        <input type="text" id="clothing_type" name="clothing_type" 
+                               value="{{ product.clothing_type if product else 'Shirt' }}" 
+                               placeholder="e.g. Shirt, Top, Dress, Trousers, Jacket" required>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="price">Price (₹ INR) *</label>
+                        <input type="number" step="0.01" id="price" name="price" 
+                               value="{{ product.price if product else 999.0 }}" 
+                               placeholder="e.g. 1499.00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brand">Brand / Designer</label>
+                        <input type="text" id="brand" name="brand" 
+                               value="{{ product.brand if product else 'AI Style' }}" 
+                               placeholder="Brand name">
+                    </div>
+                </div>
+
+                <!-- Available Sizes Selection -->
+                <div class="form-group">
+                    <label>Available Sizes *</label>
+                    <div class="sizes-checkbox-group">
+                        {% set current_sizes = product.sizes_list if product and product.sizes_list else ['S', 'M', 'L', 'XL'] %}
+                        {% for sz in ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
+                            <label class="size-checkbox-label">
+                                <input type="checkbox" name="sizes" value="{{ sz }}" 
+                                       {{ 'checked' if sz in current_sizes else '' }}>
+                                {{ sz }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Image Uploads -->
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="clothing_image">Catalog Photo (Local Asset Database)</label>
+                        <input type="file" id="clothing_image" name="clothing_image" accept="image/*">
+                        {% if product and product.image_path %}
+                            <div>
+                                <img id="currentCatalogImg" src="{{ product.image_path if product.image_path.startswith('http') or product.image_path.startswith('/') else '/' + product.image_path }}" 
+                                     class="current-image-preview" alt="Current image">
+                                <span style="font-size:11px;color:#777;display:block;">Current asset</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tryon_image">Virtual Try-On Garment Asset (Optional)</label>
+                        <input type="file" id="tryon_image" name="tryon_image" accept="image/*">
+                        {% if product and product.tryon_image_path %}
+                            <div>
+                                <img id="currentTryonImg" src="{{ product.tryon_image_path if product.tryon_image_path.startswith('http') or product.tryon_image_path.startswith('/') else '/' + product.tryon_image_path }}" 
+                                     class="current-image-preview" alt="Current tryon image">
+                                <span style="font-size:11px;color:#777;display:block;">Current tryon asset</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ADMIN FACE PLACEMENT / PINNING TOOL -->
+                <div class="form-group" style="margin-top: -10px;">
+                    <label>🎯 Model Face Placement for Virtual Try-On (Admin Oval Pinning)</label>
+                    
+                    <input type="hidden" name="face_target" id="face_target_input" 
+                           value="{{ product.face_target if product and product.face_target else '' }}">
+
+                    <div id="facePinStatusBox" class="face-pin-box {{ 'active' if product and product.face_target else '' }}">
+                        <div class="pin-status-info">
+                            <strong id="pinStatusTitle">
+                                {{ '✓ Model Face Pin Active (Custom Admin Marked)' if product and product.face_target else '📍 Face Placement: Auto-Detect (Default)' }}
+                            </strong>
+                            <p id="pinStatusDesc">
+                                {{ 'Users who try on this outfit will have their face pinned to the marked oval target.' if product and product.face_target else 'Mark the exact oval position on this photo where the user\'s face will be placed during try-on.' }}
+                            </p>
+                        </div>
+                        <button type="button" id="btnOpenFaceMarker" class="btn-open-marker">
+                            🎯 Mark Model Face / Pin Location
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="colour">Colour</label>
+                        <input type="text" id="colour" name="colour" 
+                               value="{{ product.colour if product else '' }}" 
+                               placeholder="e.g. Olive Green, Navy Blue, Beige">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fit">Fit / Style</label>
+                        <input type="text" id="fit" name="fit" 
+                               value="{{ product.fit if product else 'Slim Fit' }}" 
+                               placeholder="e.g. Regular, Slim Fit, Relaxed">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Product Description</label>
+                    <textarea id="description" name="description" rows="3" 
+                              placeholder="Detailed description of material, craftsmanship, and styling details">{{ product.description if product else '' }}</textarea>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button type="submit" class="btn-submit">
+                        {{ 'Update Clothing Asset' if product else 'Upload to Local Asset Database' }}
+                    </button>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin_face_marker.js') }}"></script>
+    <script>
+        const btnOpenMarker = document.getElementById("btnOpenFaceMarker");
+        const faceTargetInput = document.getElementById("face_target_input");
+        const statusBox = document.getElementById("facePinStatusBox");
+        const statusTitle = document.getElementById("pinStatusTitle");
+        const statusDesc = document.getElementById("pinStatusDesc");
+
+        const clothingInput = document.getElementById("clothing_image");
+        const tryonInput = document.getElementById("tryon_image");
+
+        let stagedImageFile = null;
+
+        function getActiveImageSource() {
+            if (clothingInput && clothingInput.files && clothingInput.files[0]) {
+                return { type: "file", data: clothingInput.files[0] };
+            }
+            if (tryonInput && tryonInput.files && tryonInput.files[0]) {
+                return { type: "file", data: tryonInput.files[0] };
+            }
+            const currentImg = document.getElementById("currentCatalogImg") || document.getElementById("currentTryonImg");
+            if (currentImg && currentImg.src) {
+                return { type: "url", data: currentImg.src };
+            }
+            return null;
+        }
+
+        function triggerMarker(promptIfNew) {
+            const source = getActiveImageSource();
+            if (!source) {
+                alert("Please select or upload a clothing image first so you can mark the model's face.");
+                if (clothingInput) clothingInput.click();
+                return;
+            }
+
+            const currentVal = faceTargetInput.value;
+            if (source.type === "file") {
+                window.AdminFaceMarker.openWithFile(source.data, currentVal, onPinSaved);
+            } else {
+                window.AdminFaceMarker.openWithUrl(source.data, currentVal, onPinSaved);
+            }
+        }
+
+        function onPinSaved(targetData, jsonStr) {
+            faceTargetInput.value = jsonStr;
+            statusBox.classList.add("active");
+            statusTitle.textContent = "✓ Model Face Pin Active (Custom Admin Marked)";
+            statusDesc.textContent = `Pinned at X: ${targetData.x}px, Y: ${targetData.y}px, Width: ${targetData.width}px, Height: ${targetData.height}px (Angle: ${targetData.angle}°). User face will match this oval target.`;
+        }
+
+        if (btnOpenMarker) {
+            btnOpenMarker.onclick = () => triggerMarker(false);
+        }
+
+        // Auto-prompt marker when admin chooses a new image file
+        if (clothingInput) {
+            clothingInput.addEventListener("change", function () {
+                if (this.files && this.files[0]) {
+                    // Give a brief visual feedback and launch marker
+                    setTimeout(() => {
+                        triggerMarker(true);
+                    }, 250);
+                }
+            });
+        }
+        if (tryonInput) {
+            tryonInput.addEventListener("change", function () {
+                if (this.files && this.files[0]) {
+                    setTimeout(() => {
+                        triggerMarker(true);
+                    }, 250);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

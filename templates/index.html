@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Style | Personalized Fashion</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+    </div>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        {% if session.get('user_id') %}
+            <a href="/recommendations">Recommendations</a>
+            <a href="/tryon">TryOn Me</a>
+            {% if session.get('user_role') == 'admin' %}
+                <a href="/admin" style="font-weight: 700; color: #111;">Admin Panel</a>
+            {% endif %}
+            <a href="/favourites">Favourites</a>
+            <a href="/profile" class="profile-avatar-link" title="My Profile">
+                <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+            </a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/tryon">TryOn Me</a>
+            <a href="/login" class="nav-button">Login</a>
+        {% endif %}
+
+    </nav>
+
+</header>
+
+{% if session.get('user_id') %}
+
+<!-- POST-LOGIN CATALOG WITH PROMINENT SEARCH BAR (TASKS 4, 5, 6) -->
+<section class="catalog-hero-section">
+    <div class="catalog-header-content">
+        <h1>Discover Curated Collection</h1>
+        <p>Explore all clothing items, filter dynamically by tags, and click any item to view or checkout.</p>
+
+        <form method="GET" action="/" class="search-form-container">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" name="q" value="{{ search_query or '' }}" 
+                       placeholder="Search tags: e.g. women, party clothes, casual clothes, formals..." 
+                       class="search-input" autofocus>
+                {% if search_query %}
+                    <a href="/" class="search-clear-btn" title="Clear Search">✕</a>
+                {% endif %}
+                <button type="submit" class="search-submit-btn">Search</button>
+            </div>
+            <div class="search-suggestions">
+                <span>Quick Tags:</span>
+                <a href="/?q=women" class="quick-tag-pill">women</a>
+                <a href="/?q=party+clothes" class="quick-tag-pill">party clothes</a>
+                <a href="/?q=casual+clothes" class="quick-tag-pill">casual clothes</a>
+                <a href="/?q=men" class="quick-tag-pill">men</a>
+                <a href="/?q=formal" class="quick-tag-pill">formal</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- CLOTHING PRODUCTS GRID -->
+<section class="catalog-grid-section">
+    <div class="catalog-grid-header">
+        <h2>
+            {% if search_query %}
+                Search Results for "<span style="color:#d9534f;">{{ search_query }}</span>" ({{ products|length }})
+            {% else %}
+                All Clothing Collection ({{ products|length }})
+            {% endif %}
+        </h2>
+        {% if search_query %}
+            <a href="/" style="font-size:13px; color:#666; text-decoration:none;">Show all clothing →</a>
+        {% endif %}
+    </div>
+
+    {% if products %}
+        <div class="catalog-products-grid">
+            {% for p in products %}
+                <div class="catalog-card">
+                    <a href="{{ url_for('outfit', outfit_id=p.outfit_id) }}" class="catalog-card-image-link" title="View {{ p.outfit_name }}">
+                        <div class="catalog-card-image-box">
+                            {% if p.image_path %}
+                                <img src="/{{ p.image_path }}" alt="{{ p.outfit_name }}" class="catalog-card-img"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="catalog-card-fallback-emoji" style="display:none;">👗</div>
+                            {% else %}
+                                <div class="catalog-card-fallback-emoji">👗</div>
+                            {% endif %}
+                            <span class="catalog-card-category-badge">{{ p.category }}</span>
+                        </div>
+                    </a>
+                    <div class="catalog-card-body">
+                        <div class="catalog-card-meta">
+                            <span class="catalog-card-brand">{{ p.brand or 'AI Style' }}</span>
+                            <span class="catalog-card-type">{{ p.clothing_type or 'Outfit' }}</span>
+                        </div>
+                        <h3 class="catalog-card-title">
+                            <a href="{{ url_for('outfit', outfit_id=p.outfit_id) }}">{{ p.outfit_name }}</a>
+                        </h3>
+                        <div class="catalog-card-tags">
+                            {% if p.occasion %}<span class="catalog-tag">{{ p.occasion }}</span>{% endif %}
+                            {% if p.style %}<span class="catalog-tag">{{ p.style }}</span>{% endif %}
+                            {% if p.colour %}<span class="catalog-tag">{{ p.colour }}</span>{% endif %}
+                        </div>
+                        <div class="catalog-card-footer">
+                            <div class="catalog-card-price">₹{{ '%.0f'|format(p.price) }}</div>
+                            <div class="catalog-card-actions">
+                                <a href="{{ url_for('outfit', outfit_id=p.outfit_id) }}" class="catalog-btn-detail" title="View details">View</a>
+                                <a href="{{ url_for('checkout', clothing_id=p.id) }}" class="catalog-btn-buy" title="Buy Now &amp; Checkout">Buy Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="catalog-no-results">
+            <h3>No outfits match "{{ search_query }}"</h3>
+            <p>Try searching for other tags such as "women", "party clothes", "casual clothes", or "formal".</p>
+            <a href="/" class="search-submit-btn" style="display:inline-block; margin-top:16px; text-decoration:none;">View All Outfits</a>
+        </div>
+    {% endif %}
+</section>
+
+{% else %}
+
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div class="hero-tag">
+            ✦ AI-POWERED PERSONAL STYLING
+        </div>
+
+        <h1>
+            Fashion That
+            <br>
+            <span>Understands You.</span>
+        </h1>
+
+        <p>
+            Discover outfits personalized to your body shape,
+            skin tone, style and preferences — and see how
+            they look on you with AI-powered virtual try-on.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="/register" class="primary-button">
+                Start Your Style Journey →
+            </a>
+
+            <a href="/login" class="secondary-button">
+                I Already Have an Account
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="hero-card">
+
+        <div class="fashion-circle">
+
+            <div class="fashion-icon">
+                👗
+            </div>
+
+        </div>
+
+        <div class="floating-card card-one">
+            ✨ AI Personalized
+        </div>
+
+        <div class="floating-card card-two">
+            🎨 Skin Tone Match
+        </div>
+
+        <div class="floating-card card-three">
+            👤 Body Shape
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="features">
+
+    <div class="section-heading">
+
+        <p>HOW IT WORKS</p>
+
+        <h2>
+            Your Style,
+            <span>Reimagined.</span>
+        </h2>
+
+    </div>
+
+
+    <div class="feature-grid">
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                01
+            </div>
+
+            <h3>
+                Upload Your Photo
+            </h3>
+
+            <p>
+                Upload a photo or capture one using
+                your camera.
+            </p>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                02
+            </div>
+
+            <h3>
+                AI Understands You
+            </h3>
+
+            <p>
+                AI analyses clothing-related characteristics
+                such as skin tone and body shape.
+            </p>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                03
+            </div>
+
+            <h3>
+                Get Personalized Looks
+            </h3>
+
+            <p>
+                Receive outfit recommendations based
+                on your individual profile.
+            </p>
+
+        </div>
+
+
+        <div class="feature-card">
+
+            <div class="feature-number">
+                04
+            </div>
+
+            <h3>
+                Try Before You Choose
+            </h3>
+
+            <p>
+                Visualize selected outfits using
+                virtual try-on technology.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<footer>
+
+    <div>
+        © 2026 AI Style — AI-Based Personalized Clothing
+        Recommendation & Virtual Try-On
+    </div>
+
+    <a href="/privacy">
+        Privacy & Security
+    </a>
+
+</footer>
+
+
+</body>
+
+</html>

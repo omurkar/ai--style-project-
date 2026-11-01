@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Try-On Result | {{ outfit.outfit_name }} | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --primary-accent: #0d8244;
+            --primary-dark: #111111;
+            --bg-canvas: #faf8f5;
+            --card-border: #e8e3dd;
+            --text-dark: #1a1a1a;
+            --text-muted: #666666;
+            --badge-green: #e8f5e9;
+            --badge-green-text: #1b5e20;
+        }
+
+        body {
+            background: #faf7f4;
+            color: #222;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tryon-page-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 30px 24px 80px;
+        }
+
+        /* BREADCRUMB & HEADER */
+        .tryon-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tryon-breadcrumb a {
+            color: #555;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .tryon-breadcrumb a:hover {
+            color: #111;
+        }
+
+        .tryon-breadcrumb .sep {
+            color: #bbb;
+        }
+
+        .tryon-banner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .eyebrow-tag {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #0d8244;
+            background: #eaf6ee;
+            padding: 4px 12px;
+            border-radius: 14px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .tryon-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        /* 2-COLUMN MAIN LAYOUT */
+        .tryon-split-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* LEFT COLUMN: VISUAL TRYON SHOWCASE */
+        .showcase-column {
+            position: sticky;
+            top: 25px;
+        }
+
+        .showcase-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .showcase-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .view-switch-tabs {
+            display: flex;
+            background: #f1ede8;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+        }
+
+        .view-tab-btn {
+            background: none;
+            border: none;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-tab-btn.active {
+            background: #ffffff;
+            color: #111;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-weight: 700;
+        }
+
+        .zoom-controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .zoom-btn {
+            background: #f4efe9;
+            border: 1px solid #e5ded7;
+            color: #333;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .zoom-btn:hover {
+            background: #e8e1d7;
+            color: #111;
+        }
+
+        .zoom-btn.primary {
+            background: #111;
+            color: #fff;
+            border-color: #111;
+        }
+
+        .zoom-btn.primary:hover {
+            background: #333;
+        }
+
+        /* IMAGE STAGE */
+        .stage-box {
+            width: 100%;
+            min-height: 580px;
+            max-height: 720px;
+            background: #f5f2ee;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: zoom-in;
+            border: 1px solid #eae4dc;
+        }
+
+        .stage-image {
+            max-width: 100%;
+            max-height: 690px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.25s ease-out;
+            user-select: none;
+        }
+
+        .floating-fit-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(17, 17, 17, 0.88);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            pointer-events: none;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #00e676;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00e676;
+        }
+
+        .click-hint-badge {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            background: rgba(17, 17, 17, 0.85);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 18px;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* QUICK DOWNLOAD / ACTION BAR */
+        .showcase-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .action-link-btn {
+            flex: 1;
+            min-width: 160px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .action-link-btn.dark {
+            background: #111;
+            color: #fff;
+        }
+
+        .action-link-btn.dark:hover {
+            background: #2a2a2a;
+            transform: translateY(-1px);
+        }
+
+        .action-link-btn.light {
+            background: #ffffff;
+            color: #222;
+            border: 1px solid #ddd;
+        }
+
+        .action-link-btn.light:hover {
+            background: #f8f6f3;
+            border-color: #bbb;
+        }
+
+        /* RIGHT COLUMN: PRODUCT INFO & CHECKOUT */
+        .details-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .product-overview-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+
+        .brand-eyebrow {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111;
+            margin: 0 0 12px;
+            line-height: 1.2;
+        }
+
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .rating-stars {
+            color: #e67e22;
+            font-size: 15px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fef7ee;
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid #fae1c3;
+        }
+
+        .rating-text {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* PRICE BOX */
+        .price-box {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            padding: 16px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 22px;
+        }
+
+        .deal-price {
+            font-size: 34px;
+            font-weight: 800;
+            color: #111;
+        }
+
+        .mrp-strike {
+            font-size: 18px;
+            color: #999;
+            text-decoration: line-through;
+            font-weight: 500;
+        }
+
+        .discount-pill {
+            background: #eaf6ee;
+            color: #0d8244;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 14px;
+        }
+
+        .tax-note {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* SPEC TAGS */
+        .specs-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .spec-tag {
+            background: #f6f3ee;
+            border: 1px solid #e7e0d6;
+            color: #333;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* SIZE SELECTOR */
+        .size-section {
+            margin-bottom: 24px;
+        }
+
+        .size-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .size-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .size-guide-link {
+            font-size: 12px;
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .size-pills-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-pill {
+            min-width: 48px;
+            height: 44px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border: 1.5px solid #dcd5cc;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .size-pill:hover {
+            border-color: #111;
+        }
+
+        .size-pill.active {
+            background: #111;
+            color: #fff;
+            border-color: #111;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+        }
+
+        /* PRIMARY CTA BUTTONS */
+        .cta-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-buy-now {
+            background: #0d8244;
+            color: #ffffff;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 800;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(13, 130, 68, 0.25);
+            border: none;
+        }
+
+        .btn-buy-now:hover {
+            background: #096836;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(13, 130, 68, 0.35);
+        }
+
+        .secondary-nav-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-nav-outline {
+            flex: 1;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            background: #f7f4ef;
+            color: #444;
+            border: 1px solid #e2dbd3;
+            transition: all 0.18s ease;
+        }
+
+        .btn-nav-outline:hover {
+            background: #eee8e0;
+            color: #111;
+        }
+
+        /* TRUST & POLICIES CARD (10-DAY RETURN, SHIPPING, COD) */
+        .trust-policy-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+        }
+
+        .trust-policy-header {
+            font-size: 16px;
+            font-weight: 800;
+            color: #111;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .policy-items-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .policy-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .policy-icon-badge {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            background: #f6f3ee;
+            border: 1px solid #e7e0d6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .policy-text h4 {
+            margin: 0 0 3px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .policy-text p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* ABOUT SECTION */
+        .about-section-card {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+        }
+
+        .about-section-card h3 {
+            margin: 0 0 14px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #111;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .about-desc-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 18px;
+        }
+
+        .about-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .about-details-table tr {
+            border-top: 1px solid #f0eae3;
+        }
+
+        .about-details-table td {
+            padding: 10px 0;
+        }
+
+        .about-details-table td.label {
+            color: #777;
+            font-weight: 600;
+            width: 140px;
+        }
+
+        .about-details-table td.val {
+            color: #222;
+            font-weight: 600;
+        }
+
+        /* PRIVACY POLICY & PHOTO SECURITY CARD */
+        .privacy-box-card {
+            background: #f7f9f7;
+            border: 1px solid #dce8dd;
+            border-radius: 18px;
+            padding: 20px;
+        }
+
+        .privacy-box-card h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1b5e20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .privacy-box-card p {
+            margin: 0 0 10px;
+            font-size: 13px;
+            color: #444;
+            line-height: 1.55;
+        }
+
+        .privacy-link {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0d8244;
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 960px) {
+            .tryon-split-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .showcase-column {
+                position: static;
+            }
+
+            .stage-box {
+                min-height: 440px;
+                max-height: 540px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="logo">
+        <a href="{{ url_for('home') }}" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+    </div>
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('recommendations') }}">Recommendations</a>
+        <a href="{{ url_for('tryon', clothing_id=outfit.id) }}" style="font-weight:700; color:#111;">TryOn Me</a>
+        {% if session.get('user_role') == 'admin' %}
+            <a href="/admin" style="font-weight:700; color:#c00;">Admin Panel</a>
+        {% endif %}
+        <a href="{{ url_for('favourites') }}">Favourites</a>
+        <a href="{{ url_for('profile') }}" class="profile-avatar-link" title="My Profile">
+            <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+        </a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+</header>
+
+<main class="tryon-page-wrapper">
+
+    <!-- BREADCRUMB -->
+    <nav class="tryon-breadcrumb" aria-label="breadcrumb">
+        <a href="{{ url_for('home') }}">Home</a>
+        <span class="sep">/</span>
+        <a href="{{ url_for('recommendations') }}">Recommendations</a>
+        <span class="sep">/</span>
+        <a href="{{ url_for('outfit', outfit_id=outfit.outfit_id) }}">{{ outfit.category }}</a>
+        <span class="sep">/</span>
+        <span style="color: #111; font-weight: 600;">{{ outfit.outfit_name }} (Try-On Look)</span>
+    </nav>
+
+    <!-- BANNER HEADER -->
+    <div class="tryon-banner-header">
+        <div>
+            <div class="eyebrow-tag">✨ STEP 04 · VIRTUAL FITTING STUDIO</div>
+            <h1 class="tryon-title">Your Virtual Try-On Result</h1>
+        </div>
+        <a href="{{ url_for('recommendations') }}" class="btn-nav-outline" style="padding: 9px 16px;">
+            ← Explore Other Outfits
+        </a>
+    </div>
+
+    <!-- 2-COLUMN SPLIT GRID -->
+    <div class="tryon-split-grid">
+
+        <!-- LEFT COLUMN: VISUAL TRY-ON SHOWCASE -->
+        <div class="showcase-column">
+            <div class="showcase-card">
+
+                <!-- TOOLBAR & VIEW TABS -->
+                <div class="showcase-toolbar">
+                    <div class="view-switch-tabs">
+                        <button type="button" class="view-tab-btn active" id="btnTabTryon" onclick="showTryonView()">
+                            ✨ Your Try-On
+                        </button>
+                        {% if outfit.image_path %}
+                        <button type="button" class="view-tab-btn" id="btnTabGarment" onclick="showGarmentView()">
+                            👔 Original Garment
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- ZOOM CONTROLS -->
+                    <div class="zoom-controls-bar">
+                        <button type="button" class="zoom-btn" onclick="zoomInCard()" title="Zoom In (+)">
+                            🔍 +
+                        </button>
+                        <button type="button" class="zoom-btn" onclick="zoomOutCard()" title="Zoom Out (-)">
+                            🔍 -
+                        </button>
+                        <button type="button" class="zoom-btn" onclick="resetCardZoom()" title="Reset Zoom">
+                            <span id="cardZoomPct">100%</span>
+                        </button>
+                        <button type="button" class="zoom-btn primary" onclick="openTryonLightbox()" title="Fullscreen Lightbox">
+                            ⛶ Fullscreen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- IMAGE CANVAS -->
+                <div id="tryonImageWrapper" class="stage-box" onclick="openTryonLightbox()" title="Click to open Fullscreen Lightbox">
+                    <img
+                        id="tryonResultImg"
+                        class="stage-image"
+                        src="{{ result_image }}"
+                        alt="Virtual try-on result on {{ outfit.outfit_name }}"
+                    >
+
+                    <!-- BADGES -->
+                    <div class="floating-fit-badge">
+                        <div class="pulse-dot"></div>
+                        <span id="badgeViewLabel">Virtual Try-On Active</span>
+                    </div>
+
+                    <div class="click-hint-badge">
+                        🔍 Click to Zoom &amp; Inspect
+                    </div>
+                </div>
+
+                <!-- DOWNLOAD & SECONDARY ACTIONS -->
+                <div class="showcase-actions">
+                    <a
+                        href="{{ result_image }}"
+                        download="AI_Style_{{ outfit.outfit_name|replace(' ', '_') }}_TryOn.png"
+                        class="action-link-btn dark"
+                        title="Download High-Resolution 1080p Image"
+                    >
+                        📥 Download Result (1080p)
+                    </a>
+
+                    <a
+                        href="{{ result_image }}"
+                        target="_blank"
+                        class="action-link-btn light"
+                        title="Open full size in a new browser tab"
+                    >
+                        ↗ Open Full Size
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: PRODUCT DETAILS & POLICIES -->
+        <div class="details-column">
+
+            <!-- OVERVIEW CARD -->
+            <div class="product-overview-card">
+
+                <div class="brand-eyebrow">
+                    {{ outfit.brand or 'AI STYLE EXCLUSIVE' }} · {{ outfit.category }} · {{ outfit.occasion }}
+                </div>
+
+                <h2 class="product-name">
+                    {{ outfit.outfit_name }}
+                </h2>
+
+                <!-- RATINGS -->
+                <div class="rating-row">
+                    <div class="rating-stars">
+                        ★ 4.9
+                    </div>
+                    <span class="rating-text">
+                        486 verified ratings · <strong>98% fit satisfaction</strong>
+                    </span>
+                </div>
+
+                <!-- PRICE BOX -->
+                <div class="price-box">
+                    <div>
+                        <span class="deal-price">
+                            ₹{{ outfit.price|int if outfit.price else 999 }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="mrp-strike">
+                            ₹{{ ((outfit.price or 999) * 1.8)|int }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="discount-pill">
+                            45% OFF
+                        </span>
+                    </div>
+                </div>
+                <div class="tax-note" style="margin-top:-14px; margin-bottom:18px;">
+                    Inclusive of all taxes · <strong>Free Express Shipping</strong>
+                </div>
+
+                <!-- ATTRIBUTE SPECS -->
+                <div class="specs-grid">
+                    {% if outfit.colour %}
+                    <div class="spec-tag">
+                        🎨 Color: <strong>{{ outfit.colour|capitalize }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if outfit.fit %}
+                    <div class="spec-tag">
+                        🧵 Fit: <strong>{{ outfit.fit }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if outfit.style %}
+                    <div class="spec-tag">
+                        ✨ Style: <strong>{{ outfit.style }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if outfit.pattern %}
+                    <div class="spec-tag">
+                        📐 Pattern: <strong>{{ outfit.pattern }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if outfit.season %}
+                    <div class="spec-tag">
+                        ☀️ Season: <strong>{{ outfit.season }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- SIZE SELECTION -->
+                <div class="size-section">
+                    <div class="size-header">
+                        <span class="size-label">Select Size</span>
+                        <a href="javascript:void(0)" onclick="alert('Standard Size Chart:\n• S: Chest 38, Waist 30\n• M: Chest 40, Waist 32\n• L: Chest 42, Waist 34\n• XL: Chest 44, Waist 36\n• XXL: Chest 46, Waist 38')" class="size-guide-link">
+                            📏 Size Guide
+                        </a>
+                    </div>
+                    <div class="size-pills-row">
+                        <div class="size-pill" onclick="selectSize('S', this)">S</div>
+                        <div class="size-pill active" onclick="selectSize('M', this)">M</div>
+                        <div class="size-pill" onclick="selectSize('L', this)">L</div>
+                        <div class="size-pill" onclick="selectSize('XL', this)">XL</div>
+                        <div class="size-pill" onclick="selectSize('XXL', this)">XXL</div>
+                    </div>
+                </div>
+
+                <!-- CTAS -->
+                <div class="cta-box">
+                    <a
+                        id="btnBuyLook"
+                        href="{{ url_for('checkout', clothing_id=outfit.id) }}?size=M"
+                        class="btn-buy-now"
+                    >
+                        🛒 Buy This Look Now →
+                    </a>
+
+                    <div class="secondary-nav-row">
+                        <a href="{{ url_for('outfit', outfit_id=outfit.outfit_id) }}" class="btn-nav-outline">
+                            ← Back to Outfit Card
+                        </a>
+                        <a href="{{ url_for('recommendations') }}" class="btn-nav-outline">
+                            ← Recommendations
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TRUST & RETURN POLICY (10-DAY RETURN, SHIPPING, COD) -->
+            <div class="trust-policy-card">
+                <div class="trust-policy-header">
+                    <span>🛡️ Customer Guarantees &amp; Policy</span>
+                </div>
+                <div class="policy-items-grid">
+
+                    <!-- 10-DAY RETURN POLICY -->
+                    <div class="policy-item">
+                        <div class="policy-icon-badge" style="background:#eaf6ee; color:#0d8244; border-color:#c8e8d2;">
+                            🔄
+                        </div>
+                        <div class="policy-text">
+                            <h4>10-Day Easy Returns &amp; Exchange</h4>
+                            <p>
+                                Try this look at home with complete confidence. If you're not completely satisfied with the fit or fabric, return or exchange within <strong>10 days of delivery</strong> with free doorstep pickup and 100% money-back guarantee.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- FREE DELIVERY -->
+                    <div class="policy-item">
+                        <div class="policy-icon-badge" style="background:#eef5fc; color:#0066cc; border-color:#d0e4f7;">
+                            🚚
+                        </div>
+                        <div class="policy-text">
+                            <h4>Free Express Shipping</h4>
+                            <p>
+                                Dispatched within 24 hours. Expected delivery within 2–4 business days with real-time SMS tracking updates.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- COD AVAILABLE -->
+                    <div class="policy-item">
+                        <div class="policy-icon-badge" style="background:#fdf5e8; color:#d97706; border-color:#fae6c0;">
+                            💵
+                        </div>
+                        <div class="policy-text">
+                            <h4>Cash on Delivery (COD) Available</h4>
+                            <p>
+                                Pay at your doorstep with Cash or UPI, or use 100% encrypted online payments (Cards, Net Banking, EMI).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 100% AUTHENTIC -->
+                    <div class="policy-item">
+                        <div class="policy-icon-badge" style="background:#f5eefc; color:#7c3aed; border-color:#e4d1f9;">
+                            ✨
+                        </div>
+                        <div class="policy-text">
+                            <h4>100% Authentic Quality Verified</h4>
+                            <p>
+                                Premium certified fabrics rigorously tested for color retention, seam strength, and shape memory after wash.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ABOUT SECTION -->
+            <div class="about-section-card">
+                <h3>📖 About This Outfit</h3>
+                <div class="about-desc-text">
+                    {{ outfit.description or 'A versatile, modern staple designed for exceptional comfort and effortless style. Tailored with reinforced stitching and breathable high-grade fabric to deliver a flattering, structured silhouette across all body profiles.' }}
+                </div>
+
+                <table class="about-details-table">
+                    <tbody>
+                        <tr>
+                            <td class="label">Material</td>
+                            <td class="val">{{ outfit.material or '100% Premium Breathable Cotton' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Fit Type</td>
+                            <td class="val">{{ outfit.fit or 'Regular / Tailored Fit' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Occasion</td>
+                            <td class="val">{{ outfit.occasion or 'Casual & Semi-Formal' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Wash &amp; Care</td>
+                            <td class="val">Machine wash cold (30°C), gentle cycle. Warm iron if needed.</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Styling Advice</td>
+                            <td class="val">Pair with dark denim, chinos, or formal trousers with clean loafers or sneakers for a sharp appearance.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PRIVACY & PHOTO PROTECTION POLICY -->
+            <div class="privacy-box-card">
+                <h4>🔒 Try-On Privacy &amp; Photo Protection</h4>
+                <p>
+                    Your personal uploaded photo and cropped face template are protected with strict user-isolated encryption.
+                    We <strong>never</strong> publish your photo, share it with third parties, or use your biometric face features for training external AI models.
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <a href="{{ url_for('privacy') }}" class="privacy-link" target="_blank">
+                        Read Full Privacy &amp; Return Policy →
+                    </a>
+                    <span style="font-size:12px; color:#666;">Local Storage · Session Protected</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer" style="margin-top: 60px;">
+    <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <span>© 2026 AI Style · Next-Gen Intelligent Fashion Studio</span>
+        <div style="display:flex; gap:20px;">
+            <a href="{{ url_for('privacy') }}">Privacy &amp; Return Policy</a>
+            <a href="{{ url_for('recommendations') }}">Recommendations</a>
+            <a href="{{ url_for('profile') }}">Account Settings</a>
+        </div>
+    </div>
+</footer>
+
+<!-- FULLSCREEN LIGHTBOX MODAL -->
+<div id="tryonLightbox" style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(8, 8, 8, 0.96);
+    backdrop-filter: blur(14px);
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    user-select: none;
+" onclick="handleLightboxBackdrop(event)">
+
+    <div style="
+        position: absolute;
+        top: 24px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: rgba(26, 26, 26, 0.92);
+        padding: 8px 18px;
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        z-index: 1000000;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+    ">
+        <button type="button" class="zoom-btn" style="background:transparent; color:#fff; border:none;" onclick="modalZoomIn()" title="Zoom In (+)">
+            🔍 +
+        </button>
+        <button type="button" class="zoom-btn" style="background:transparent; color:#fff; border:none;" onclick="modalZoomOut()" title="Zoom Out (-)">
+            🔍 -
+        </button>
+        <button type="button" class="zoom-btn" style="background:transparent; color:#fff; border:none;" onclick="modalResetZoom()" title="Reset Zoom">
+            🔄 <span id="modalZoomPct">100%</span>
+        </button>
+        <a id="lightboxNewTabBtn" href="{{ result_image }}" target="_blank" class="zoom-btn primary" style="text-decoration:none; display:inline-flex; align-items:center;">
+            ↗ Open Tab
+        </a>
+        <button type="button" class="zoom-btn" style="background:rgba(255,255,255,0.18); color:#fff; border:none;" onclick="closeTryonLightbox()" title="Close Viewer (Esc)">
+            ✕ Close
+        </button>
+    </div>
+
+    <div id="modalStage" style="
+        width: 92vw;
+        height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: grab;
+    ">
+        <img id="modalImg" src="{{ result_image }}" alt="Virtual Try-On Zoom" style="
+            max-width: 90vw;
+            max-height: 82vh;
+            object-fit: contain;
+            transition: transform 0.15s ease-out;
+            transform-origin: center center;
+        ">
+    </div>
+
+</div>
+
+<script>
+    // VIEW SWITCH: TRY-ON VS ORIGINAL GARMENT
+    const tryonUrl = "{{ result_image }}";
+    {% if outfit.image_path %}
+    const garmentUrl = "/{{ outfit.image_path }}";
+    {% else %}
+    const garmentUrl = tryonUrl;
+    {% endif %}
+
+    let currentActiveImgUrl = tryonUrl;
+
+    function showTryonView() {
+        document.getElementById('btnTabTryon').classList.add('active');
+        const garmentBtn = document.getElementById('btnTabGarment');
+        if (garmentBtn) garmentBtn.classList.remove('active');
+        document.getElementById('tryonResultImg').src = tryonUrl;
+        document.getElementById('modalImg').src = tryonUrl;
+        document.getElementById('lightboxNewTabBtn').href = tryonUrl;
+        document.getElementById('badgeViewLabel').textContent = "Virtual Try-On Active";
+        currentActiveImgUrl = tryonUrl;
+        resetCardZoom();
+    }
+
+    function showGarmentView() {
+        const garmentBtn = document.getElementById('btnTabGarment');
+        if (garmentBtn) garmentBtn.classList.add('active');
+        document.getElementById('btnTabTryon').classList.remove('active');
+        document.getElementById('tryonResultImg').src = garmentUrl;
+        document.getElementById('modalImg').src = garmentUrl;
+        document.getElementById('lightboxNewTabBtn').href = garmentUrl;
+        document.getElementById('badgeViewLabel').textContent = "Original Garment Photo";
+        currentActiveImgUrl = garmentUrl;
+        resetCardZoom();
+    }
+
+    // SIZE SELECTOR
+    let selectedSize = 'M';
+    function selectSize(size, el) {
+        selectedSize = size;
+        document.querySelectorAll('.size-pill').forEach(pill => pill.classList.remove('active'));
+        el.classList.add('active');
+        const buyBtn = document.getElementById('btnBuyLook');
+        const baseHref = "{{ url_for('checkout', clothing_id=outfit.id) }}";
+        buyBtn.href = `${baseHref}?size=${size}`;
+    }
+
+    // CARD ZOOM
+    let cardZoom = 1;
+    function zoomInCard() {
+        if (cardZoom < 2.5) {
+            cardZoom = Math.min(2.5, cardZoom + 0.25);
+            document.getElementById('tryonResultImg').style.transform = `scale(${cardZoom})`;
+            document.getElementById('cardZoomPct').textContent = Math.round(cardZoom * 100) + '%';
+        }
+    }
+    function zoomOutCard() {
+        if (cardZoom > 0.75) {
+            cardZoom = Math.max(0.75, cardZoom - 0.25);
+            document.getElementById('tryonResultImg').style.transform = `scale(${cardZoom})`;
+            document.getElementById('cardZoomPct').textContent = Math.round(cardZoom * 100) + '%';
+        }
+    }
+    function resetCardZoom() {
+        cardZoom = 1;
+        document.getElementById('tryonResultImg').style.transform = 'scale(1)';
+        document.getElementById('cardZoomPct').textContent = '100%';
+    }
+
+    // MODAL LIGHTBOX
+    let modalZoom = 1;
+    let isDraggingModal = false;
+    let modalStartX = 0, modalStartY = 0;
+    let modalTransX = 0, modalTransY = 0;
+
+    function openTryonLightbox() {
+        const modal = document.getElementById('tryonLightbox');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        modalResetZoom();
+    }
+
+    function closeTryonLightbox() {
+        const modal = document.getElementById('tryonLightbox');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        modalResetZoom();
+    }
+
+    function updateModalTransform() {
+        const img = document.getElementById('modalImg');
+        img.style.transform = `translate(${modalTransX}px, ${modalTransY}px) scale(${modalZoom})`;
+        document.getElementById('modalZoomPct').textContent = Math.round(modalZoom * 100) + '%';
+    }
+
+    function modalZoomIn() {
+        if (modalZoom < 4) {
+            modalZoom = Math.min(4, modalZoom + 0.35);
+            updateModalTransform();
+        }
+    }
+
+    function modalZoomOut() {
+        if (modalZoom > 0.6) {
+            modalZoom = Math.max(0.6, modalZoom - 0.35);
+            if (modalZoom <= 1) {
+                modalTransX = 0;
+                modalTransY = 0;
+            }
+            updateModalTransform();
+        }
+    }
+
+    function modalResetZoom() {
+        modalZoom = 1;
+        modalTransX = 0;
+        modalTransY = 0;
+        updateModalTransform();
+    }
+
+    function handleLightboxBackdrop(e) {
+        if (e.target.id === 'tryonLightbox' || e.target.id === 'modalStage') {
+            closeTryonLightbox();
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeTryonLightbox();
+        }
+    });
+
+    const modalStage = document.getElementById('modalStage');
+    if (modalStage) {
+        modalStage.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                modalZoomIn();
+            } else {
+                modalZoomOut();
+            }
+        }, { passive: false });
+
+        modalStage.addEventListener('mousedown', function(e) {
+            if (modalZoom > 1) {
+                isDraggingModal = true;
+                modalStartX = e.clientX - modalTransX;
+                modalStartY = e.clientY - modalTransY;
+                modalStage.style.cursor = 'grabbing';
+            }
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (isDraggingModal) {
+                modalTransX = e.clientX - modalStartX;
+                modalTransY = e.clientY - modalStartY;
+                updateModalTransform();
+            }
+        });
+
+        window.addEventListener('mouseup', function() {
+            if (isDraggingModal) {
+                isDraggingModal = false;
+                modalStage.style.cursor = 'grab';
+            }
+        });
+
+        modalStage.addEventListener('dblclick', function() {
+            if (modalZoom > 1) {
+                modalResetZoom();
+            } else {
+                modalZoom = 2;
+                updateModalTransform();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

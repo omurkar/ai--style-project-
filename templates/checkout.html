@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | AI Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Leaflet CSS for GPS mini-map preview -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        .checkout-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 40px;
+            align-items: start;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f0eae4;
+            padding-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .field-group {
+            margin-bottom: 16px;
+        }
+        .field-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .field-group input, .field-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd6cf;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #faf8f5;
+        }
+        .field-group input:focus {
+            border-color: #111;
+            outline: none;
+            background: #fff;
+        }
+        .field-hint {
+            font-size: 11px;
+            color: #777;
+            margin-top: 4px;
+        }
+        /* Size Selector Pills */
+        .size-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .size-pill-radio {
+            display: none;
+        }
+        .size-pill-label {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #faf7f4;
+            border: 1.5px solid #ded6cf;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .size-pill-radio:checked + .size-pill-label {
+            background: #111;
+            color: #fff;
+            border-color: #111;
+        }
+        /* Geolocation Box */
+        .geo-box {
+            background: #f7f4ef;
+            border: 1px dashed #d6ceca;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .geo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .btn-track-location {
+            background: #111;
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-track-location:hover {
+            background: #333;
+        }
+        .geo-badge {
+            background: #e6f7ed;
+            color: #0d8244;
+            border: 1px solid #b7ebd0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+            margin-top: 12px;
+        }
+        #deliveryMap {
+            height: 200px;
+            border-radius: 10px;
+            margin-top: 14px;
+            display: none;
+            border: 1px solid #ddd;
+        }
+        /* Product Order Summary Card */
+        .order-summary-card {
+            background: #ffffff;
+            border: 1px solid #e8e2dd;
+            border-radius: 20px;
+            padding: 26px;
+            position: sticky;
+            top: 25px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+        .summary-product-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0eae4;
+        }
+        .summary-thumb {
+            width: 85px;
+            height: 85px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #eee;
+        }
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 2px dashed #e8e2dd;
+            font-size: 20px;
+            font-weight: 800;
+            color: #111;
+        }
+        .btn-checkout {
+            width: 100%;
+            background: #111;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-top: 22px;
+            transition: background 0.2s;
+        }
+        .btn-checkout:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <a href="/" style="text-decoration:none; color:inherit;">AI<span>Style</span></a>
+        </div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="/tryon">TryOn Me</a>
+            {% if session.get('user_role') == 'admin' %}
+                <a href="/admin" style="font-weight:700; color:#c00;">Admin</a>
+            {% endif %}
+            <a href="/favourites">Favourites</a>
+            <a href="/profile" class="profile-avatar-link" title="My Profile">
+                <div class="nav-profile-avatar">{{ (session.get('user_name', 'U')[0])|upper }}</div>
+            </a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+
+    <div class="checkout-page">
+        <div style="margin-bottom: 25px;">
+            <a href="{{ url_for('outfit', outfit_id=product.outfit_id) }}" style="text-decoration:none; color:#555; font-size:14px;">
+                ← Back to Product Details
+            </a>
+            <h1 style="font-size: 32px; margin-top: 10px;">Secure Checkout & Delivery</h1>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}" style="margin-bottom: 25px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('checkout_submit') }}" id="checkoutForm" class="checkout-grid">
+            <input type="hidden" name="clothing_id" value="{{ product.id }}">
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+            <input type="hidden" id="location_accuracy" name="location_accuracy">
+
+            <!-- LEFT COLUMN: SIZES, ADDRESS & GEOLOCATION -->
+            <div>
+                <!-- Size Selector Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>1. Select Your Size</span>
+                    </div>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 14px;">
+                        Please choose your preferred fitting size for this outfit:
+                    </p>
+                    <div class="size-pills">
+                        {% for sz in product.sizes_list %}
+                            <input type="radio" id="size_{{ sz }}" name="size" value="{{ sz }}" class="size-pill-radio" 
+                                   {{ 'checked' if loop.first else '' }} required>
+                            <label for="size_{{ sz }}" class="size-pill-label">{{ sz }}</label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Complete Delivery Address Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>2. Delivery Address</span>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="field-group">
+                            <label for="delivery_name">Recipient Full Name *</label>
+                            <input type="text" id="delivery_name" name="delivery_name" 
+                                   value="{{ user.full_name if user else '' }}" 
+                                   placeholder="Full name" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="delivery_phone">Mobile Number *</label>
+                            <input type="tel" id="delivery_phone" name="delivery_phone" 
+                                   placeholder="10-digit mobile number" 
+                                   pattern="[6-9][0-9]{9}" 
+                                   title="Please enter a valid 10-digit Indian phone number" required>
+                            <span class="field-hint">e.g. 9876543210</span>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="delivery_address_line1">House / Flat No., Apartment / Street *</label>
+                        <input type="text" id="delivery_address_line1" name="delivery_address_line1" 
+                               placeholder="e.g. 402, Lotus Orchid, 5th Main Road" required>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="delivery_address_line2">Landmark / Area (Optional)</label>
+                        <input type="text" id="delivery_address_line2" name="delivery_address_line2" 
+                               placeholder="e.g. Near Indiranagar Metro Station">
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="field-group">
+                            <label for="delivery_city">City *</label>
+                            <input type="text" id="delivery_city" name="delivery_city" 
+                                   placeholder="e.g. Bengaluru" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="delivery_state">State *</label>
+                            <input type="text" id="delivery_state" name="delivery_state" 
+                                   placeholder="e.g. Karnataka" required>
+                        </div>
+                    </div>
+
+                    <!-- Postal / PIN Code with Enforced Validation -->
+                    <div class="field-group">
+                        <label for="delivery_postal_code">Postal / PIN Code (Strict Validation) *</label>
+                        <input type="text" id="delivery_postal_code" name="delivery_postal_code" 
+                               pattern="^[1-9][0-9]{5}$" 
+                               maxlength="6"
+                               placeholder="e.g. 560038" 
+                               title="Enter a valid 6-digit Indian PIN Code (e.g. 560038)" required>
+                        <span class="field-hint" id="pinValidationHint">Must be a valid 6-digit PIN code.</span>
+                    </div>
+
+                    <!-- Geolocation Tracking Box -->
+                    <div class="geo-box">
+                        <div class="geo-header">
+                            <div>
+                                <strong style="font-size: 14px; color: #111;">📍 Real-Time Location Tracking</strong>
+                                <p style="font-size: 12px; color: #666; margin: 2px 0 0;">
+                                    Capture exact GPS coordinates via HTML5 Geolocation API for seamless doorstep delivery.
+                                </p>
+                            </div>
+                            <button type="button" id="trackLocationBtn" class="btn-track-location">
+                                <span>Track My Current Location</span>
+                            </button>
+                        </div>
+
+                        <div id="geoStatus" style="font-size: 12px; color: #666; margin-top: 6px;"></div>
+
+                        <div id="geoBadge" class="geo-badge">
+                            ✓ Coordinates Captured: <span id="geoCoords"></span> (±<span id="geoAccuracy"></span>m)
+                        </div>
+
+                        <div id="deliveryMap"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: ORDER SUMMARY & UPI GATEWAY LINK -->
+            <div>
+                <div class="order-summary-card">
+                    <h3 style="font-size: 18px; margin-bottom: 18px;">Order Summary</h3>
+
+                    <div class="summary-product-row">
+                        {% if product.image_path %}
+                            <img src="{{ product.image_path if product.image_path.startswith('http') or product.image_path.startswith('/') else '/' + product.image_path }}" 
+                                 class="summary-thumb" alt="Product"
+                                 onerror="this.src='https://via.placeholder.com/85?text=Outfit';">
+                        {% else %}
+                            <div class="summary-thumb" style="display:flex;align-items:center;justify-content:center;font-size:35px;">👗</div>
+                        {% endif %}
+
+                        <div>
+                            <div style="font-size: 12px; color: #888; text-transform: uppercase; font-weight: 700;">
+                                {{ product.brand or 'AI Style' }}
+                            </div>
+                            <h4 style="font-size: 16px; margin: 3px 0 6px;">{{ product.outfit_name }}</h4>
+                            <div style="font-size: 13px; color: #666;">
+                                Category: {{ product.category }} · {{ product.clothing_type }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cost-row">
+                        <span>Item Price</span>
+                        <span>₹{{ '%.2f'|format(product.price or 0) }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Quantity</span>
+                        <span>1</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Delivery Fee</span>
+                        <span style="color: #0d8244; font-weight: 600;">FREE (Promo)</span>
+                    </div>
+
+                    <div class="total-row">
+                        <span>Total Payable</span>
+                        <span>₹{{ '%.2f'|format(product.price or 0) }}</span>
+                    </div>
+
+                    <div style="margin-top: 15px; background: #faf7f4; padding: 12px; border-radius: 8px; font-size: 12px; color: #666;">
+                        🛡️ <strong>Custom UPI Gateway:</strong> Next step renders a dynamic Google Pay UPI QR code with exact amount pre-embedded for instant mobile scan & pay.
+                    </div>
+
+                    <button type="submit" class="btn-checkout">
+                        Proceed to Payment (₹{{ '%.0f'|format(product.price or 0) }}) →
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Leaflet JS for GPS mini-map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Real-Time PIN Code Validation
+        const pinInput = document.getElementById('delivery_postal_code');
+        const pinHint = document.getElementById('pinValidationHint');
+
+        pinInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            const isValid = /^[1-9][0-9]{5}$/.test(val);
+            if (val.length === 6 && isValid) {
+                pinHint.textContent = "✓ Valid 6-digit Indian PIN code.";
+                pinHint.style.color = "#0d8244";
+            } else if (val.length > 0) {
+                pinHint.textContent = "Must be a 6-digit number starting with 1-9.";
+                pinHint.style.color = "#d32f2f";
+            } else {
+                pinHint.textContent = "Must be a valid 6-digit PIN code.";
+                pinHint.style.color = "#777";
+            }
+        });
+
+        // HTML5 Geolocation API Integration
+        const trackBtn = document.getElementById('trackLocationBtn');
+        const geoStatus = document.getElementById('geoStatus');
+        const geoBadge = document.getElementById('geoBadge');
+        const geoCoords = document.getElementById('geoCoords');
+        const geoAccuracy = document.getElementById('geoAccuracy');
+        const mapDiv = document.getElementById('deliveryMap');
+
+        let map = null;
+        let marker = null;
+
+        trackBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                geoStatus.textContent = "Geolocation is not supported by your browser.";
+                geoStatus.style.color = "#d32f2f";
+                return;
+            }
+
+            trackBtn.disabled = true;
+            trackBtn.innerHTML = "<span>Locating GPS Sensor...</span>";
+            geoStatus.textContent = "Requesting device coordinates...";
+            geoStatus.style.color = "#666";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const acc = Math.round(position.coords.accuracy);
+
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lng;
+                    document.getElementById('location_accuracy').value = acc;
+
+                    geoCoords.textContent = `${lat.toFixed(5)}°, ${lng.toFixed(5)}°`;
+                    geoAccuracy.textContent = acc;
+                    geoBadge.style.display = "block";
+                    geoStatus.textContent = "Real-time delivery location locked.";
+                    geoStatus.style.color = "#0d8244";
+
+                    trackBtn.innerHTML = "<span>📍 Location Updated</span>";
+                    trackBtn.disabled = false;
+
+                    // Initialize / Update Leaflet Mini Map
+                    mapDiv.style.display = "block";
+                    if (!map) {
+                        map = L.map('deliveryMap').setView([lat, lng], 16);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© OpenStreetMap'
+                        }).addTo(map);
+                        marker = L.marker([lat, lng]).addTo(map)
+                            .bindPopup('<b>Exact Delivery Coordinates</b>').openPopup();
+                    } else {
+                        map.setView([lat, lng], 16);
+                        marker.setLatLng([lat, lng]);
+                    }
+                },
+                (error) => {
+                    console.warn("Geolocation error:", error);
+                    trackBtn.disabled = false;
+                    trackBtn.innerHTML = "<span>Track My Current Location</span>";
+                    let msg = "Could not detect location. Please ensure location permissions are enabled.";
+                    if (error.code === error.PERMISSION_DENIED) {
+                        msg = "Location permission denied. Address fields above will be used for delivery.";
+                    }
+                    geoStatus.textContent = msg;
+                    geoStatus.style.color = "#d32f2f";
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+    </script>
+
+</body>
+</html>
+
