@@ -1,0 +1,67 @@
+<!-- =========================================================
+     AI FASHION ADVISOR CHATBOT COMPONENT
+     ========================================================= -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fashion_chatbot.css') }}">
+
+<!-- FLOATING LAUNCHER -->
+<button type="button" id="styleChatLauncher" class="style-chat-launcher" aria-label="Open AI Fashion Advisor">
+    <span class="launcher-icon">✨</span>
+    <span>Style Advisor</span>
+    <span class="launcher-pulse-dot"></span>
+</button>
+
+<!-- CHAT WINDOW -->
+<div id="styleChatWindow" class="style-chat-window" role="dialog" aria-modal="true" aria-labelledby="styleChatHeaderTitle">
+    <!-- HEADER -->
+    <div class="style-chat-header">
+        <div class="chat-header-info">
+            <div class="chat-avatar-icon">👗</div>
+            <div>
+                <h3 id="styleChatHeaderTitle" class="chat-header-title">AI Style Advisor</h3>
+                <div class="chat-header-status">
+                    <span class="status-dot"></span>
+                    <span>Wardrobe Consultant · Online</span>
+                </div>
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <button type="button" id="styleChatReset" class="chat-header-btn" title="Reset Profile & Conversation">🔄</button>
+            <button type="button" id="styleChatClose" class="chat-header-btn" title="Close Advisor">✕</button>
+        </div>
+    </div>
+
+    <!-- PROFILE BADGES BAR -->
+    <div id="styleChatProfileBar" class="chat-profile-badge-bar" style="display: none;"></div>
+
+    <!-- MESSAGES STREAM -->
+    <div id="styleChatMessages" class="style-chat-messages">
+        <!-- System Welcome Bubble -->
+        <div class="chat-bubble bot">
+            👋 <strong>Welcome to AI Style Advisor!</strong> I am your personal high-fashion stylist. Tell me about an upcoming event or style you'd love to wear!
+        </div>
+        <!-- Typing Indicator -->
+        <div id="styleChatTyping" class="chat-typing-indicator">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span style="font-size: 11px; color: #888; margin-left: 4px;">Stylist is curating...</span>
+        </div>
+    </div>
+
+    <!-- INPUT ROW -->
+    <div class="style-chat-input-area">
+        <input
+            type="text"
+            id="styleChatInput"
+            class="chat-input-field"
+            placeholder="Ask for an outfit, e.g. Diwali festive look, job interview..."
+            autocomplete="off"
+        >
+        <button type="button" id="styleChatSend" class="chat-send-btn" title="Send message">
+            ➤
+        </button>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/fashion_chatbot.js') }}"></script>
+

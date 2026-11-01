@@ -3171,6 +3171,72 @@ def payment_confirm(order_id):
 
 
 # =========================================================
+# AI FASHION ADVISOR CHATBOT API ROUTES
+# =========================================================
+
+@app.route("/api/chat/message", methods=["POST"])
+def api_chat_message():
+    """
+    Chatbot endpoint for natural language queries:
+    - Enforces strict LLM domain guardrails (fashion only)
+    - Mandates profiling flow (age, gender, category)
+    - Executes intent analysis & RAG inventory queries
+    - Returns structured advice with clickable product cards
+    """
+    import fashion_advisor_service as fas
+    data = request.get_json(silent=True) or {}
+    message = (data.get("message") or "").strip()
+    client_profile = data.get("profile") or {}
+    history = data.get("history") or []
+
+    # Merge session profile with client profile
+    saved_profile = session.get("chat_profile") or {}
+    merged_profile = {
+        "age_group": client_profile.get("age_group") or saved_profile.get("age_group"),
+        "gender_identity": client_profile.get("gender_identity") or saved_profile.get("gender_identity"),
+        "clothing_category": client_profile.get("clothing_category") or saved_profile.get("clothing_category")
+    }
+
+    # Pre-populate category from authenticated session if available
+    if not merged_profile.get("clothing_category"):
+        user_cat = session.get("user_category")
+        if user_cat in ["Men", "Women", "Kids", "Unisex"]:
+            merged_profile["clothing_category"] = user_cat.lower()
+
+    result = fas.process_chat_message(
+        user_message=message,
+        current_profile=merged_profile,
+        conversation_history=history
+    )
+
+    # Persist updated profile in session
+    session["chat_profile"] = result.get("profile", {})
+    return jsonify(result)
+
+
+@app.route("/api/chat/profile", methods=["GET"])
+def api_chat_profile():
+    """Retrieve active session profiling data."""
+    saved_profile = session.get("chat_profile") or {}
+    return jsonify({"profile": saved_profile})
+
+
+@app.route("/api/chat/reset", methods=["POST"])
+def api_chat_reset():
+    """Reset the chat profile and return fresh greeting."""
+    import fashion_advisor_service as fas
+    session.pop("chat_profile", None)
+    initial_prompt = fas.get_missing_profile_step({})
+    return jsonify({
+        "status": "reset",
+        "reply": initial_prompt[1],
+        "profile": {},
+        "profile_complete": False,
+        "quick_replies": initial_prompt[2]
+    })
+
+
+# =========================================================
 # RUN APPLICATION
 # =========================================================
 
